@@ -1,0 +1,13 @@
+{
+  "name": "@herdmaster/database",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase db push",
+    "db:generate-types": "supabase gen types typescript --local > ../web/src/types/database.generated.ts",
+    "db:seed": "psql $DATABASE_URL -f ./seed/development.sql"
+  }
+}

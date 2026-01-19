@@ -1,0 +1,23 @@
+{
+  "name": "herdmaster-pro",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Modern SaaS herd management system for dairy farms",
+  "scripts": {
+    "dev": "pnpm --filter @herdmaster/web dev",
+    "build": "pnpm --filter @herdmaster/web build",
+    "db:generate": "pnpm --filter @herdmaster/database generate",
+    "db:migrate": "pnpm --filter @herdmaster/database migrate",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "dairy",
+    "farm",
+    "herd-management",
+    "saas",
+    "supabase"
+  ],
+  "author": "HerdMaster Team",
+  "license": "UNLICENSED"
+}
