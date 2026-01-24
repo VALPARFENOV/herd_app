@@ -186,14 +186,13 @@ export function AnimalForm({ animal, pens, mode }: AnimalFormProps) {
           <div className="space-y-2">
             <Label htmlFor="pen_id">Pen</Label>
             <Select
-              value={formData.pen_id}
+              value={formData.pen_id || undefined}
               onValueChange={(value) => setFormData({ ...formData, pen_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select pen" />
+                <SelectValue placeholder="No pen (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No pen</SelectItem>
                 {pens.map((pen) => (
                   <SelectItem key={pen.id} value={pen.id}>
                     {pen.name} {pen.barns ? `(${pen.barns.name})` : ""}

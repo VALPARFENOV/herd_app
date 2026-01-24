@@ -58,11 +58,13 @@ export function enrichAnimal(animal: Animal, pen?: Pen | null): AnimalWithComput
 
 export async function getAnimals(options?: {
   status?: Animal['current_status']
+  filter?: 'fresh' | 'to_breed' | 'preg_check' | 'dry_off' | 'vet'
   limit?: number
   offset?: number
   search?: string
 }): Promise<{ data: AnimalWithComputed[]; count: number }> {
   const supabase = await createClient()
+  const today = new Date()
 
   let query = supabase
     .from('animals')
@@ -72,6 +74,55 @@ export async function getAnimals(options?: {
 
   if (options?.status) {
     query = query.eq('current_status', options.status)
+  }
+
+  // Apply quick access filters
+  if (options?.filter) {
+    switch (options.filter) {
+      case 'fresh': {
+        // Fresh cows: DIM < 21
+        const twentyOneDaysAgo = new Date(today)
+        twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 21)
+        query = query
+          .in('current_status', ['lactating', 'fresh'])
+          .gte('last_calving_date', twentyOneDaysAgo.toISOString().split('T')[0])
+        break
+      }
+      case 'to_breed': {
+        // Open cows past 60 DIM
+        const sixtyDaysAgo = new Date(today)
+        sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+        query = query
+          .in('current_status', ['lactating', 'fresh'])
+          .is('last_breeding_date', null)
+          .lte('last_calving_date', sixtyDaysAgo.toISOString().split('T')[0])
+        break
+      }
+      case 'preg_check': {
+        // Bred cows 35-45 days after breeding
+        const thirtyFiveDaysAgo = new Date(today)
+        thirtyFiveDaysAgo.setDate(thirtyFiveDaysAgo.getDate() - 45)
+        const fortyFiveDaysAgo = new Date(today)
+        fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 35)
+        query = query
+          .not('last_breeding_date', 'is', null)
+          .is('pregnancy_confirmed_date', null)
+          .lte('last_breeding_date', fortyFiveDaysAgo.toISOString().split('T')[0])
+          .gte('last_breeding_date', thirtyFiveDaysAgo.toISOString().split('T')[0])
+        break
+      }
+      case 'dry_off': {
+        // Pregnant cows due to calve within 60 days
+        const sixtyDaysFromNow = new Date(today)
+        sixtyDaysFromNow.setDate(sixtyDaysFromNow.getDate() + 60)
+        query = query
+          .not('expected_calving_date', 'is', null)
+          .lte('expected_calving_date', sixtyDaysFromNow.toISOString().split('T')[0])
+          .in('current_status', ['lactating'])
+        break
+      }
+      // Note: 'vet' filter is handled separately as it requires joining with events table
+    }
   }
 
   if (options?.search) {

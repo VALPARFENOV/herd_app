@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
-  Bell,
   Search,
   Settings,
   User,
@@ -20,13 +19,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { createClient } from "@/lib/supabase/client"
 import { useEffect, useState } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/" },
   { name: "Animals", href: "/animals" },
-  { name: "Tasks", href: "/tasks" },
+  { name: "Breeding", href: "/breeding" },
+  { name: "Vet", href: "/vet" },
+  { name: "Quality", href: "/quality" },
   { name: "Reports", href: "/reports" },
 ]
 
@@ -102,12 +104,7 @@ export function Header() {
             </div>
           </div>
           <nav className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
-                3
-              </span>
-            </Button>
+            <NotificationBell initialCount={3} />
             <Link href="/settings">
               <Button variant="ghost" size="icon">
                 <Settings className="h-4 w-4" />

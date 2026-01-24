@@ -151,6 +151,15 @@ Tests should be placed in:
 - **Production:** Supabase self-hosted on Beget VPS
 - **Enterprise:** Dedicated installation via `deploy/docker-compose.dedicated.yml`
 
+## Session Logs
+
+После каждой рабочей сессии перед коммитом записывай краткий итог в файл:
+- Папка: `.claude/sessions/`
+- Формат имени: `YYYY-MM-DD-краткое-описание.md`
+- Содержимое: дата, что сделано (кратко), важные решения, следующие шаги
+
+При старте новой сессии читай последние 2-3 файла из этой папки для контекста.
+
 ## References
 
 - Product specification: `saas_concept.md`
@@ -159,3 +168,4 @@ Tests should be placed in:
 - Screen designs: `docs/screens.md`
 - Architecture: `docs/architecture.md`
 - Architecture plan: `.claude/plans/generic-beaming-melody.md`
+- Session logs: `.claude/sessions/`

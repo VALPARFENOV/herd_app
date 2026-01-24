@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -35,8 +35,10 @@ import {
 interface AddEventDialogProps {
   animalId: string
   animalEarTag: string
-  trigger: React.ReactNode
+  trigger?: React.ReactNode
   defaultEventType?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 const eventTypes = [
@@ -55,9 +57,15 @@ export function AddEventDialog({
   animalEarTag,
   trigger,
   defaultEventType,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: AddEventDialogProps) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = controlledOnOpenChange !== undefined ? controlledOnOpenChange : setInternalOpen
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [eventType, setEventType] = useState(defaultEventType || "")
@@ -65,6 +73,27 @@ export function AddEventDialog({
 
   // Form fields for different event types
   const [formData, setFormData] = useState<Record<string, string>>({})
+
+  // Bulls list for breeding
+  const [bulls, setBulls] = useState<Array<{ id: string; name: string; breed: string; available_straws: number; cost: number | null }>>([])
+  const [loadingBulls, setLoadingBulls] = useState(false)
+
+  // Load bulls when breeding event type is selected
+  useEffect(() => {
+    if (eventType === 'breeding' && bulls.length === 0) {
+      setLoadingBulls(true)
+      fetch('/api/bulls/selection')
+        .then((res) => res.json())
+        .then((data) => {
+          setBulls(data)
+          setLoadingBulls(false)
+        })
+        .catch((err) => {
+          console.error('Error loading bulls:', err)
+          setLoadingBulls(false)
+        })
+    }
+  }, [eventType, bulls.length])
 
   const updateFormData = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }))
@@ -81,10 +110,13 @@ export function AddEventDialog({
 
     switch (eventType) {
       case "breeding":
+        // Get bull name from selected bull
+        const selectedBull = bulls.find((b) => b.id === formData.sire_id)
         result = await recordBreeding({
           animal_id: animalId,
           event_date: eventDate,
-          sire_name: formData.sire_name,
+          sire_id: formData.sire_id,
+          sire_name: selectedBull?.name || formData.sire_name,
           technician: formData.technician,
           notes: formData.notes,
         })
@@ -178,13 +210,49 @@ export function AddEventDialog({
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="sire_name">Sire Name/ID</Label>
-              <Input
-                id="sire_name"
-                value={formData.sire_name || ""}
-                onChange={(e) => updateFormData("sire_name", e.target.value)}
-                placeholder="Enter sire name or ID"
-              />
+              <Label htmlFor="sire_id">Bull/Sire *</Label>
+              {loadingBulls ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading bulls...
+                </div>
+              ) : bulls.length > 0 ? (
+                <>
+                  <Select
+                    value={formData.sire_id || ""}
+                    onValueChange={(v) => updateFormData("sire_id", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select bull" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bulls.map((bull) => (
+                        <SelectItem key={bull.id} value={bull.id}>
+                          <div className="flex items-center justify-between w-full">
+                            <span>{bull.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {bull.breed} • {bull.available_straws} straws
+                              {bull.cost && ` • $${bull.cost}`}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.sire_id && bulls.find((b) => b.id === formData.sire_id) && (
+                    <p className="text-xs text-muted-foreground">
+                      {bulls.find((b) => b.id === formData.sire_id)?.available_straws} straws available
+                    </p>
+                  )}
+                </>
+              ) : (
+                <Input
+                  id="sire_name"
+                  value={formData.sire_name || ""}
+                  onChange={(e) => updateFormData("sire_name", e.target.value)}
+                  placeholder="Enter sire name or ID"
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="technician">Technician</Label>
@@ -389,7 +457,7 @@ export function AddEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Event for #{animalEarTag}</DialogTitle>

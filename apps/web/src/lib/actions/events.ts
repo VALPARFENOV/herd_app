@@ -66,7 +66,7 @@ export async function recordBreeding(data: {
   technician?: string
   notes?: string
 }) {
-  return createEvent({
+  const result = await createEvent({
     animal_id: data.animal_id,
     event_type: 'breeding',
     event_date: data.event_date,
@@ -77,6 +77,14 @@ export async function recordBreeding(data: {
       notes: data.notes,
     },
   })
+
+  // Deduct semen straw from inventory if bull selected
+  if (result.data && data.sire_id) {
+    const { deductSemenStraw } = await import('@/lib/data/bulls')
+    await deductSemenStraw(data.sire_id)
+  }
+
+  return result
 }
 
 // Heat detection

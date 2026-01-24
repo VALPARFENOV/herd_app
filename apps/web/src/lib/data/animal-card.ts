@@ -1,6 +1,8 @@
 import { getAnimalById, AnimalWithComputed } from './animals'
 import { getEventsByAnimalId, EventWithDetails } from './events'
 import { getLactationsByAnimalId, getCurrentLactation } from './lactations'
+import { getHoofInspections, type HoofInspection } from './hoof-care'
+import { getUdderTestSessions, type UdderTestSession } from './udder-health'
 import type { Lactation } from '@/types/database'
 
 export interface AnimalCardData {
@@ -8,6 +10,8 @@ export interface AnimalCardData {
   events: EventWithDetails[]
   lactations: Lactation[]
   currentLactation: Lactation | null
+  hoofInspections: HoofInspection[]
+  udderTestSessions: UdderTestSession[]
 }
 
 export async function getAnimalCardData(id: string): Promise<AnimalCardData | null> {
@@ -17,10 +21,12 @@ export async function getAnimalCardData(id: string): Promise<AnimalCardData | nu
     return null
   }
 
-  const [events, lactations, currentLactation] = await Promise.all([
+  const [events, lactations, currentLactation, hoofInspections, udderTestSessions] = await Promise.all([
     getEventsByAnimalId(id, { limit: 50 }),
     getLactationsByAnimalId(id),
     getCurrentLactation(id),
+    getHoofInspections(id),
+    getUdderTestSessions(id),
   ])
 
   return {
@@ -28,5 +34,7 @@ export async function getAnimalCardData(id: string): Promise<AnimalCardData | nu
     events,
     lactations,
     currentLactation,
+    hoofInspections,
+    udderTestSessions,
   }
 }

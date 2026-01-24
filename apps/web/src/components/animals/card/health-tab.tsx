@@ -16,41 +16,49 @@ import {
 import { HoofMap } from "./health/hoof-map"
 import { UdderQuarterChart } from "./health/udder-quarter-chart"
 import { AddEventDialog } from "@/components/events/add-event-dialog"
+import { AddHoofInspectionDialog } from "./health/add-hoof-inspection-dialog"
+import { AddUdderTestDialog } from "./health/add-udder-test-dialog"
 import type { AnimalWithComputed } from "@/lib/data/animals"
 import type { EventWithDetails } from "@/lib/data/events"
+import type { HoofInspection } from "@/lib/data/hoof-care"
+import type { UdderTestSession } from "@/lib/data/udder-health"
 
 interface HealthTabProps {
   animal: AnimalWithComputed
   events: EventWithDetails[]
+  hoofInspections: HoofInspection[]
+  udderTestSessions: UdderTestSession[]
 }
 
-export function HealthTab({ animal, events }: HealthTabProps) {
+export function HealthTab({ animal, events, hoofInspections, udderTestSessions }: HealthTabProps) {
   const treatmentEvents = events.filter(e => ['treatment', 'vaccination'].includes(e.event_type))
   const hasActiveRestriction = false // TODO: Calculate from treatments with active withdrawal
 
-  // Mock data for hooves and udder - will be replaced with real data from service provider tables
-  const mockHoofInspections = [
-    {
-      date: "2024-12-15",
-      locomotionScore: 2,
-      lesions: [
-        { leg: "RR", claw: "outer", zone: 1, type: "DD", severity: 2 },
-        { leg: "RR", claw: "outer", zone: 2, type: "HHE", severity: 1 },
-      ],
-      treatment: "Hoof block + topical",
-      inspector: "HoofCare Ltd",
-    },
-  ]
+  // Real hoof inspection data
+  const latestHoofInspection = hoofInspections.length > 0 ? hoofInspections[0] : null
 
-  const mockUdderTests = [
-    { date: "2025-01-15", quarter: "LF", scc: 85, cmt: "-", pathogen: null },
-    { date: "2025-01-15", quarter: "LR", scc: 92, cmt: "-", pathogen: null },
-    { date: "2025-01-15", quarter: "RF", scc: 78, cmt: "-", pathogen: null },
-    { date: "2025-01-15", quarter: "RR", scc: 110, cmt: "+", pathogen: null },
-  ]
+  // Real udder test data
+  const latestSCCTest = udderTestSessions.find(s => s.testType === 'scc')
+  const latestCMTTest = udderTestSessions.find(s => s.testType === 'cmt')
+  const latestCultureTest = udderTestSessions.find(s => s.testType === 'culture')
 
-  const latestHoofInspection = mockHoofInspections[0]
-  const sccDisplay = animal.last_scc ? Math.round(animal.last_scc / 1000) : null
+  const sccDisplay = latestSCCTest?.avgSCC ? Math.round(latestSCCTest.avgSCC / 1000) : null
+
+  // Prepare data for UdderQuarterChart (expects format: {quarter, scc, cmt, pathogen})
+  const udderChartData = ['LF', 'LR', 'RF', 'RR'].map((quarter) => {
+    const q = quarter as 'LF' | 'LR' | 'RF' | 'RR'
+    const sccTest = latestSCCTest?.quarters[q]
+    const cmtTest = latestCMTTest?.quarters[q]
+    const cultureTest = latestCultureTest?.quarters[q]
+
+    return {
+      date: latestSCCTest?.testDate || '',
+      quarter: q,
+      scc: sccTest?.resultValue ? Math.round(sccTest.resultValue / 1000) : 0,
+      cmt: cmtTest?.resultText || '—',
+      pathogen: cultureTest?.pathogen || null,
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -142,10 +150,16 @@ export function HealthTab({ animal, events }: HealthTabProps) {
         <TabsContent value="hooves" className="mt-4 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Hoof Health</h3>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Inspection
-            </Button>
+            <AddHoofInspectionDialog
+              animalId={animal.id}
+              animalEarTag={animal.ear_tag}
+              trigger={
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Inspection
+                </Button>
+              }
+            />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -156,7 +170,7 @@ export function HealthTab({ animal, events }: HealthTabProps) {
               <CardContent>
                 <HoofMap
                   lesions={latestHoofInspection?.lesions || []}
-                  date={latestHoofInspection?.date}
+                  date={latestHoofInspection?.inspectionDate}
                 />
               </CardContent>
             </Card>
@@ -171,19 +185,27 @@ export function HealthTab({ animal, events }: HealthTabProps) {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Date:</span>
-                        <span className="ml-2 font-medium">{latestHoofInspection.date}</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(latestHoofInspection.inspectionDate).toLocaleDateString()}
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Locomotion:</span>
-                        <span className="ml-2 font-medium">{latestHoofInspection.locomotionScore}/5</span>
+                        <span className="ml-2 font-medium">
+                          {latestHoofInspection.locomotionScore ?? '—'}/5
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Inspector:</span>
-                        <span className="ml-2 font-medium">{latestHoofInspection.inspector}</span>
+                        <span className="ml-2 font-medium">
+                          {latestHoofInspection.inspectorName || '—'}
+                        </span>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Treatment:</span>
-                        <span className="ml-2 font-medium">{latestHoofInspection.treatment}</span>
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">Notes:</span>
+                        <span className="ml-2 font-medium">
+                          {latestHoofInspection.overallNotes || '—'}
+                        </span>
                       </div>
                     </div>
                     {latestHoofInspection.lesions.length > 0 && (
@@ -193,7 +215,7 @@ export function HealthTab({ animal, events }: HealthTabProps) {
                           {latestHoofInspection.lesions.map((lesion, idx) => (
                             <div key={idx} className="text-sm flex items-center gap-2">
                               <Badge variant={lesion.severity >= 2 ? "destructive" : "warning"}>
-                                {lesion.type}
+                                {lesion.lesionType || 'Unknown'}
                               </Badge>
                               <span>{lesion.leg} {lesion.claw} - Zone {lesion.zone}</span>
                               <span className="text-muted-foreground">(Severity {lesion.severity}/3)</span>
@@ -216,10 +238,16 @@ export function HealthTab({ animal, events }: HealthTabProps) {
         <TabsContent value="udder" className="mt-4 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Udder Health</h3>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Test
-            </Button>
+            <AddUdderTestDialog
+              animalId={animal.id}
+              animalEarTag={animal.ear_tag}
+              trigger={
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Test
+                </Button>
+              }
+            />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -228,7 +256,13 @@ export function HealthTab({ animal, events }: HealthTabProps) {
                 <CardTitle className="text-base">SCC by Quarter</CardTitle>
               </CardHeader>
               <CardContent>
-                <UdderQuarterChart data={mockUdderTests} />
+                {latestSCCTest ? (
+                  <UdderQuarterChart data={udderChartData} />
+                ) : (
+                  <div className="h-48 flex items-center justify-center text-muted-foreground border rounded-md">
+                    No SCC test data available
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -237,30 +271,47 @@ export function HealthTab({ animal, events }: HealthTabProps) {
                 <CardTitle className="text-base">Latest Results</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Quarter</TableHead>
-                      <TableHead>SCC (K)</TableHead>
-                      <TableHead>CMT</TableHead>
-                      <TableHead>Pathogen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockUdderTests.map((test, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{test.quarter}</TableCell>
-                        <TableCell>
-                          <Badge variant={test.scc < 200 ? "success" : "warning"}>
-                            {test.scc}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{test.cmt}</TableCell>
-                        <TableCell>{test.pathogen || "—"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {latestSCCTest || latestCMTTest || latestCultureTest ? (
+                  <>
+                    {latestSCCTest && (
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Test Date: {new Date(latestSCCTest.testDate).toLocaleDateString()}
+                      </div>
+                    )}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Quarter</TableHead>
+                          <TableHead>SCC (K)</TableHead>
+                          <TableHead>CMT</TableHead>
+                          <TableHead>Pathogen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {udderChartData.map((test, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{test.quarter}</TableCell>
+                            <TableCell>
+                              {test.scc > 0 ? (
+                                <Badge variant={test.scc < 200 ? "success" : test.scc < 400 ? "warning" : "destructive"}>
+                                  {test.scc}
+                                </Badge>
+                              ) : (
+                                '—'
+                              )}
+                            </TableCell>
+                            <TableCell>{test.cmt}</TableCell>
+                            <TableCell>{test.pathogen || "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </>
+                ) : (
+                  <div className="h-32 flex items-center justify-center text-muted-foreground border rounded-md">
+                    No udder test data available
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

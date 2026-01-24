@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -13,47 +12,22 @@ import {
   AlertTriangle,
   Activity,
 } from "lucide-react"
+import type { SidebarData } from "@/lib/data/sidebar"
 
-const quickAccess = [
-  {
-    name: "Fresh Cows",
-    href: "/animals?status=fresh",
-    icon: Baby,
-    count: 12
-  },
-  {
-    name: "To Breed",
-    href: "/tasks?type=breeding",
-    icon: Heart,
-    count: 8
-  },
-  {
-    name: "Pregnancy Check",
-    href: "/tasks?type=preg_check",
-    icon: Activity,
-    count: 5
-  },
-  {
-    name: "Dry Off",
-    href: "/tasks?type=dry_off",
-    icon: Droplets,
-    count: 3
-  },
-  {
-    name: "Vet List",
-    href: "/tasks?type=vet",
-    icon: Syringe,
-    count: 4
-  },
-  {
-    name: "Alerts",
-    href: "/alerts",
-    icon: AlertTriangle,
-    count: 7
-  },
-]
+const iconMap = {
+  "Fresh Cows": Baby,
+  "To Breed": Heart,
+  "Pregnancy Check": Activity,
+  "Dry Off": Droplets,
+  "Vet List": Syringe,
+  "Alerts": AlertTriangle,
+}
 
-export function Sidebar() {
+interface SidebarProps {
+  data: SidebarData
+}
+
+export function Sidebar({ data }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -64,22 +38,25 @@ export function Sidebar() {
             Quick Access
           </h2>
           <div className="space-y-1">
-            {quickAccess.map((item) => (
-              <Link key={item.name} href={item.href}>
-                <Button
-                  variant={pathname === item.href ? "secondary" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span className="flex-1 text-left">{item.name}</span>
-                  {item.count > 0 && (
-                    <span className="ml-auto bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                      {item.count}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            ))}
+            {data.quickAccess.map((item) => {
+              const Icon = iconMap[item.name as keyof typeof iconMap] || Activity
+              return (
+                <Link key={item.name} href={item.href}>
+                  <Button
+                    variant={pathname === item.href ? "secondary" : "ghost"}
+                    className="w-full justify-start"
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    <span className="flex-1 text-left">{item.name}</span>
+                    {item.count > 0 && (
+                      <span className="ml-auto bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                        {item.count}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )
+            })}
           </div>
         </div>
         <Separator className="my-4" />
@@ -90,19 +67,19 @@ export function Sidebar() {
           <div className="space-y-3 px-4">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Total Animals</span>
-              <span className="font-medium">398</span>
+              <span className="font-medium">{data.herdOverview.total}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Milking</span>
-              <span className="font-medium">285</span>
+              <span className="font-medium">{data.herdOverview.milking}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Dry</span>
-              <span className="font-medium">45</span>
+              <span className="font-medium">{data.herdOverview.dry}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Heifers</span>
-              <span className="font-medium">68</span>
+              <span className="font-medium">{data.herdOverview.heifers}</span>
             </div>
           </div>
         </div>

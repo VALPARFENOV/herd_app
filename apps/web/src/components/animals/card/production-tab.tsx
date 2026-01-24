@@ -1,5 +1,7 @@
 "use client"
 
+import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -9,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { AddMilkReadingDialog } from "./health/add-milk-reading-dialog"
 import type { AnimalWithComputed } from "@/lib/data/animals"
 import type { Lactation } from "@/types/database"
 
@@ -33,6 +36,20 @@ export function ProductionTab({ animal, lactations, currentLactation }: Producti
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Milk Production</h3>
+        <AddMilkReadingDialog
+          animalId={animal.id}
+          animalEarTag={animal.ear_tag}
+          trigger={
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Milk Reading
+            </Button>
+          }
+        />
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">

@@ -3,17 +3,19 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { TaskCounters } from "@/components/dashboard/task-counters"
 import { AlertsList } from "@/components/dashboard/alerts-list"
 import { RCDistributionChart } from "@/components/dashboard/rc-distribution-chart"
-import {
-  MilkProductionChart,
-  generateSampleMilkProductionData,
-} from "@/components/dashboard/milk-production-chart"
+import { MilkProductionChart } from "@/components/dashboard/milk-production-chart"
+import { QualityMetricsCard } from "@/components/dashboard/quality-metrics-card"
 import { getDashboardStats, getDashboardTasks, getDashboardAlerts } from "@/lib/data/dashboard"
+import { getDailyMilkProduction } from "@/lib/data/milk-production"
+import { getQualityDashboardData } from "@/lib/data/milk-quality"
 
 export default async function DashboardPage() {
-  const [stats, tasks, alerts] = await Promise.all([
+  const [stats, tasks, alerts, milkProduction, qualityData] = await Promise.all([
     getDashboardStats(),
     getDashboardTasks(),
     getDashboardAlerts(),
+    getDailyMilkProduction(30),
+    getQualityDashboardData(),
   ])
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -61,12 +63,23 @@ export default async function DashboardPage() {
 
       <TaskCounters tasks={tasks} />
 
-      {/* Milk production chart - uses sample data until milk_readings table is implemented */}
-      <MilkProductionChart data={generateSampleMilkProductionData(30, stats.milking || 100)} />
+      {/* Milk production chart - real data from TimescaleDB */}
+      <MilkProductionChart
+        data={milkProduction.map((d) => ({
+          date: d.date,
+          total_kg: d.totalKg,
+          avg_per_cow: d.avgPerCow,
+        }))}
+      />
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <RCDistributionChart data={stats.distribution} total={stats.totalHerd} />
         <AlertsList alerts={alerts} />
+        <QualityMetricsCard
+          herdMetrics={qualityData.herd_metrics}
+          bulkTankStats={qualityData.bulk_tank_stats}
+          highSCCCount={qualityData.high_scc_animals.length}
+        />
       </div>
     </div>
   )

@@ -43,7 +43,7 @@ function getReproStatusBadge(animal: AnimalCardData['animal']) {
 }
 
 export function AnimalCardClient({ data }: AnimalCardClientProps) {
-  const { animal, events, lactations, currentLactation } = data
+  const { animal, events, lactations, currentLactation, hoofInspections, udderTestSessions } = data
 
   return (
     <div className="space-y-6">
@@ -126,7 +126,7 @@ export function AnimalCardClient({ data }: AnimalCardClientProps) {
         </TabsContent>
 
         <TabsContent value="health" className="mt-6">
-          <HealthTab animal={animal} events={events} />
+          <HealthTab animal={animal} events={events} hoofInspections={hoofInspections} udderTestSessions={udderTestSessions} />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
