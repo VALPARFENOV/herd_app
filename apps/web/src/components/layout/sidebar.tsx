@@ -13,6 +13,9 @@ import {
   Activity,
 } from "lucide-react"
 import type { SidebarData } from "@/lib/data/sidebar"
+import { useSidebarHighlight } from "@/components/cli/sidebar-highlight-provider"
+import { useCliCommand } from "@/components/cli/cli-command-provider"
+import { quickAccessNameToSection, sidebarSectionToCommand } from "@/lib/cli/command-to-sidebar"
 
 const iconMap = {
   "Fresh Cows": Baby,
@@ -29,6 +32,20 @@ interface SidebarProps {
 
 export function Sidebar({ data }: SidebarProps) {
   const pathname = usePathname()
+  const { highlightedSection } = useSidebarHighlight()
+  const { insertCommand } = useCliCommand()
+
+  const handleQuickAccessClick = (e: React.MouseEvent, itemName: string) => {
+    // Alt+Click or Ctrl+Click to insert command instead of navigating
+    if (e.altKey || e.ctrlKey) {
+      e.preventDefault()
+      const section = quickAccessNameToSection(itemName)
+      const command = sidebarSectionToCommand(section)
+      if (command) {
+        insertCommand(command)
+      }
+    }
+  }
 
   return (
     <aside className="hidden lg:flex w-64 flex-col fixed left-0 top-14 h-[calc(100vh-3.5rem)] border-r bg-background">
@@ -40,16 +57,32 @@ export function Sidebar({ data }: SidebarProps) {
           <div className="space-y-1">
             {data.quickAccess.map((item) => {
               const Icon = iconMap[item.name as keyof typeof iconMap] || Activity
+              const itemSection = quickAccessNameToSection(item.name)
+              const isHighlighted = highlightedSection === itemSection
+
               return (
-                <Link key={item.name} href={item.href}>
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => handleQuickAccessClick(e, item.name)}
+                >
                   <Button
                     variant={pathname === item.href ? "secondary" : "ghost"}
-                    className="w-full justify-start"
+                    className={`w-full justify-start transition-all ${
+                      isHighlighted
+                        ? 'ring-2 ring-green-500/50 bg-green-500/10 animate-pulse'
+                        : ''
+                    }`}
+                    title="Alt+Click to insert command in CLI"
                   >
                     <Icon className="mr-2 h-4 w-4" />
                     <span className="flex-1 text-left">{item.name}</span>
                     {item.count > 0 && (
-                      <span className="ml-auto bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                      <span className={`ml-auto rounded-full px-2 py-0.5 text-xs ${
+                        isHighlighted
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
                         {item.count}
                       </span>
                     )}

@@ -32,26 +32,26 @@ ON CONFLICT DO NOTHING;
 -- Create sample animals
 INSERT INTO public.animals (
     id, tenant_id, ear_tag, birth_date, breed, sex, current_status,
-    pen_id, lactation_number, last_calving_date, last_milk_kg, bcs_score
+    pen_id, lactation_number, last_calving_date, last_milk_kg, bcs_score, reproductive_status
 )
 VALUES
     -- Lactating cows in Pen 1A
-    ('a0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', '1001', '2020-03-15', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 3, '2024-01-10', 42.5, 3.25),
-    ('a0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', '1002', '2019-07-22', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, '2024-02-05', 38.2, 3.0),
-    ('a0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', '1003', '2021-01-08', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, '2024-03-20', 45.8, 3.5),
+    ('a0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', '1001', '2020-03-15', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 3, '2024-01-10', 42.5, 3.25, 'open'),
+    ('a0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', '1002', '2019-07-22', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, '2024-02-05', 38.2, 3.0, 'bred'),
+    ('a0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', '1003', '2021-01-08', 'Holstein', 'female', 'lactating', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, '2024-03-20', 45.8, 3.5, 'preg'),
 
     -- Fresh cows in Pen 1C
-    ('a0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', '1004', '2020-11-30', 'Holstein', 'female', 'fresh', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 3, '2025-01-05', 35.0, 2.75),
-    ('a0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', '1005', '2021-05-12', 'Brown Swiss', 'female', 'fresh', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, '2025-01-12', 32.5, 3.0),
+    ('a0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', '1004', '2020-11-30', 'Holstein', 'female', 'fresh', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 3, '2025-01-05', 35.0, 2.75, 'fresh'),
+    ('a0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', '1005', '2021-05-12', 'Brown Swiss', 'female', 'fresh', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, '2025-01-12', 32.5, 3.0, 'fresh'),
 
     -- Dry cows in Pen 2A
-    ('a0000006-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', '1006', '2019-04-18', 'Holstein', 'female', 'dry', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 4, '2024-05-15', NULL, 3.75),
-    ('a0000007-0000-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', '1007', '2020-08-25', 'Holstein', 'female', 'dry', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 3, '2024-06-01', NULL, 3.5),
+    ('a0000006-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', '1006', '2019-04-18', 'Holstein', 'female', 'dry', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 4, '2024-05-15', NULL, 3.75, 'dry'),
+    ('a0000007-0000-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', '1007', '2020-08-25', 'Holstein', 'female', 'dry', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 3, '2024-06-01', NULL, 3.5, 'preg'),
 
     -- Heifers in Pen 3A
-    ('a0000008-0000-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', '1008', '2023-02-14', 'Holstein', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.0),
-    ('a0000009-0000-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', '1009', '2023-04-22', 'Holstein', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.25),
-    ('a0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', '1010', '2023-06-08', 'Brown Swiss', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.0)
+    ('a0000008-0000-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', '1008', '2023-02-14', 'Holstein', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.0, 'blank'),
+    ('a0000009-0000-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', '1009', '2023-04-22', 'Holstein', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.25, 'blank'),
+    ('a0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', '1010', '2023-06-08', 'Brown Swiss', 'female', 'heifer', '55555555-cccc-cccc-cccc-cccccccccccc', 0, NULL, NULL, 3.0, 'blank')
 ON CONFLICT DO NOTHING;
 
 -- Create sample events

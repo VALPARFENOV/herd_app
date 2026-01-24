@@ -1,22 +1,48 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { toast } from 'sonner'
 import { CommandInput } from './command-input'
 import { parseListCommand } from '@/lib/cli/parser-simple'
 import { executeCommand, type ExecutionResult } from '@/lib/cli/executor'
+import { useCliResults } from './cli-results-provider'
+import { useSidebarHighlight } from './sidebar-highlight-provider'
+import { commandToSidebarSection } from '@/lib/cli/command-to-sidebar'
 
 interface CliBarProps {
   onExecute?: (command: string, result: ExecutionResult) => void
   onError?: (error: string) => void
 }
 
-export function CliBar({ onExecute, onError }: CliBarProps) {
+export interface CliBarRef {
+  insertCommand: (command: string) => void
+  focusCli: () => void
+}
+
+export const CliBar = forwardRef<CliBarRef, CliBarProps>(function CliBar(
+  { onExecute, onError },
+  ref
+) {
+  const { setResult } = useCliResults()
+  const { setHighlightedSection } = useSidebarHighlight()
   const [input, setInput] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [isExecuting, setIsExecuting] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    insertCommand: (command: string) => {
+      setInput(command)
+      setHistoryIndex(-1)
+    },
+    focusCli: () => {
+      const inputEl = containerRef.current?.querySelector('input')
+      inputEl?.focus()
+    },
+  }))
 
   // Keyboard shortcuts: / or Ctrl+L to focus
   useEffect(() => {
@@ -96,6 +122,9 @@ export function CliBar({ onExecute, onError }: CliBarProps) {
 
       if ('message' in parsed) {
         // Parse error
+        toast.error('Parse error', {
+          description: parsed.message,
+        })
         if (onError) {
           onError(parsed.message)
         }
@@ -105,11 +134,28 @@ export function CliBar({ onExecute, onError }: CliBarProps) {
       // Execute command
       const result = await executeCommand(parsed)
 
+      // Determine which sidebar section to highlight
+      const sidebarSection = commandToSidebarSection(parsed)
+      setHighlightedSection(sidebarSection)
+
+      // Store result in context for display
+      setResult(result, command)
+
       if (!result.success && result.error) {
+        toast.error('Execution error', {
+          description: result.error,
+        })
         if (onError) {
           onError(result.error)
         }
         return
+      }
+
+      // Success - show success toast
+      if (result.success && result.count !== undefined) {
+        toast.success('Command executed', {
+          description: `Found ${result.count} result${result.count !== 1 ? 's' : ''} in ${result.executionTime}ms`,
+        })
       }
 
       // Success - call callback with result
@@ -118,9 +164,19 @@ export function CliBar({ onExecute, onError }: CliBarProps) {
       }
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      toast.error('Unexpected error', {
+        description: errorMessage,
+      })
       if (onError) {
-        onError(error instanceof Error ? error.message : 'Unknown error')
+        onError(errorMessage)
       }
+      // Store error result
+      setResult({
+        success: false,
+        type: 'error',
+        error: errorMessage
+      }, command)
     } finally {
       setIsExecuting(false)
       // Clear input
@@ -172,4 +228,4 @@ export function CliBar({ onExecute, onError }: CliBarProps) {
       </div>
     </div>
   )
-}
+})

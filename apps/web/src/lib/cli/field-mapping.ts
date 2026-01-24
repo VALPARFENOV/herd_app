@@ -31,8 +31,8 @@ export const FIELD_MAPPINGS: FieldMapping[] = [
 
   // Reproductive Status (Items 13-28)
   { dairyCompCode: 'LACT', dbField: 'lactation_number', description: 'Lactation number', type: 'number', category: 'reproduction' },
-  { dairyCompCode: 'RC', dbField: 'rc_code', description: 'Reproductive code (0-8)', type: 'number', category: 'reproduction' },
-  { dairyCompCode: 'RPRO', dbField: 'rc_code', description: 'Reproductive code (alias)', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'RC', dbField: 'reproductive_status', description: 'Reproductive code (0-8)', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'RPRO', dbField: 'reproductive_status', description: 'Reproductive code (alias)', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'TBRD', dbField: 'times_bred', description: 'Times bred this lactation', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'SIRC', dbField: 'sire_of_conception', description: 'Sire of conception', type: 'string', category: 'reproduction' },
   { dairyCompCode: 'LSIR', dbField: 'last_breeding_bull_id', description: 'Last service sire', type: 'string', category: 'reproduction' },

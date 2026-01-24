@@ -6,6 +6,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { CommandAST, Condition } from './parser-simple'
 import { dairyCompToDb, dbToDairyComp } from './field-mapping'
+import { rcCodeToStatus, statusToRcCode } from './rc-code-mapping'
 
 export interface ExecutionResult {
   success: boolean
@@ -67,9 +68,9 @@ async function executeList(ast: CommandAST): Promise<ExecutionResult> {
     // Determine which fields to select
     const selectFields = getSelectFields(ast.items)
 
-    // Build query
+    // Build query - use animals_with_calculated view for DIM and other calculated fields
     let query = supabase
-      .from('animals')
+      .from('animals_with_calculated')
       .select(selectFields, { count: 'exact' })
 
     // Apply conditions (WHERE clause)
@@ -122,7 +123,7 @@ async function executeList(ast: CommandAST): Promise<ExecutionResult> {
 function getSelectFields(items?: string[]): string {
   if (!items || items.length === 0) {
     // Default columns for LIST
-    return 'ear_tag,pen_id,lactation_number,dim,rc_code,last_milk_kg'
+    return 'ear_tag,pen_id,lactation_number,dim,reproductive_status,last_milk_kg'
   }
 
   const dbFields: string[] = []
@@ -154,24 +155,30 @@ function applyConditions(query: any, conditions: Condition[]): any {
       continue
     }
 
+    // Special handling for RC field - convert numeric code to status string
+    let value = condition.value
+    if ((condition.field === 'RC' || condition.field === 'RPRO') && typeof value === 'number') {
+      value = rcCodeToStatus(value)
+    }
+
     switch (condition.operator) {
       case '=':
-        query = query.eq(dbField, condition.value)
+        query = query.eq(dbField, value)
         break
       case '>':
-        query = query.gt(dbField, condition.value)
+        query = query.gt(dbField, value)
         break
       case '<':
-        query = query.lt(dbField, condition.value)
+        query = query.lt(dbField, value)
         break
       case '>=':
-        query = query.gte(dbField, condition.value)
+        query = query.gte(dbField, value)
         break
       case '<=':
-        query = query.lte(dbField, condition.value)
+        query = query.lte(dbField, value)
         break
       case '<>':
-        query = query.neq(dbField, condition.value)
+        query = query.neq(dbField, value)
         break
     }
   }
@@ -222,7 +229,10 @@ function formatValue(value: any, itemCode: string): string | number {
   switch (itemCode) {
     case 'RC':
     case 'RPRO':
-      // Show RC code as number
+      // Convert reproductive_status string to RC numeric code
+      if (typeof value === 'string') {
+        return statusToRcCode(value)
+      }
       return value
 
     case 'DIM':
