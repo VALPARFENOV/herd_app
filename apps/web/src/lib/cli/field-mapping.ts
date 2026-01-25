@@ -33,30 +33,42 @@ export const FIELD_MAPPINGS: FieldMapping[] = [
   { dairyCompCode: 'LACT', dbField: 'lactation_number', description: 'Lactation number', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'RC', dbField: 'reproductive_status', description: 'Reproductive code (0-8)', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'RPRO', dbField: 'reproductive_status', description: 'Reproductive code (alias)', type: 'number', category: 'reproduction' },
-  { dairyCompCode: 'TBRD', dbField: 'times_bred', description: 'Times bred this lactation', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'TBRD', dbField: 'tbrd', description: 'Times bred this lactation', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'SPC', dbField: 'spc', description: 'Services per conception', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'SIRC', dbField: 'sire_of_conception', description: 'Sire of conception', type: 'string', category: 'reproduction' },
   { dairyCompCode: 'LSIR', dbField: 'last_breeding_bull_id', description: 'Last service sire', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'HINT', dbField: 'hint', description: 'Heat interval (days)', type: 'number', category: 'reproduction' },
 
-  // Production (Items 44-55)
-  { dairyCompCode: 'TOTM', dbField: 'total_milk_current_lactation', description: 'Total milk this lactation', type: 'number', category: 'production' },
-  { dairyCompCode: 'MILK', dbField: 'last_milk_kg', description: 'Last test day milk', type: 'number', category: 'production' },
+  // Production - Current Lactation (Items 44-55)
+  { dairyCompCode: 'TOTM', dbField: 'totm', description: 'Total milk this lactation (kg)', type: 'number', category: 'production' },
+  { dairyCompCode: 'TOTF', dbField: 'totf', description: 'Total fat this lactation (kg)', type: 'number', category: 'production' },
+  { dairyCompCode: 'TOTP', dbField: 'totp', description: 'Total protein this lactation (kg)', type: 'number', category: 'production' },
+  { dairyCompCode: '305ME', dbField: '305me', description: '305-day Mature Equivalent milk', type: 'number', category: 'production' },
+  { dairyCompCode: 'MILK', dbField: 'last_milk_kg', description: 'Last test day milk (kg)', type: 'number', category: 'production' },
   { dairyCompCode: 'SCC', dbField: 'last_scc', description: 'Somatic cell count', type: 'number', category: 'production' },
+  { dairyCompCode: 'LGSCC', dbField: 'lgscc', description: 'Log SCC (base 10)', type: 'number', category: 'production' },
+  { dairyCompCode: 'FCM', dbField: 'fcm', description: 'Fat Corrected Milk (3.5%)', type: 'number', category: 'production' },
   { dairyCompCode: 'PCTF', dbField: 'last_fat_percent', description: 'Fat percentage', type: 'number', category: 'production' },
   { dairyCompCode: 'PCTP', dbField: 'last_protein_percent', description: 'Protein percentage', type: 'number', category: 'production' },
 
-  // Previous Lactation (Items 56-62)
-  { dairyCompCode: 'PDIM', dbField: 'previous_dim', description: 'Previous lactation DIM', type: 'number', category: 'production' },
-  { dairyCompCode: 'PTOTM', dbField: 'previous_total_milk', description: 'Previous total milk', type: 'number', category: 'production' },
+  // Production - Previous Lactation (Items 56-62)
+  { dairyCompCode: 'PDIM', dbField: 'pdim', description: 'Previous lactation DIM', type: 'number', category: 'production' },
+  { dairyCompCode: 'PDOPN', dbField: 'pdopn', description: 'Previous lactation days open', type: 'number', category: 'production' },
+  { dairyCompCode: 'PTBRD', dbField: 'ptbrd', description: 'Previous lactation times bred', type: 'number', category: 'production' },
+  { dairyCompCode: 'PTOTM', dbField: 'ptotm', description: 'Previous lactation total milk (kg)', type: 'number', category: 'production' },
+  { dairyCompCode: 'PTOTF', dbField: 'ptotf', description: 'Previous lactation total fat (kg)', type: 'number', category: 'production' },
+  { dairyCompCode: 'PTOTP', dbField: 'ptotp', description: 'Previous lactation total protein (kg)', type: 'number', category: 'production' },
 
   // Calculated Status (Items 75-87)
   { dairyCompCode: 'DIM', dbField: 'dim', description: 'Days in milk', type: 'number', category: 'calculated' },
   { dairyCompCode: 'DOPN', dbField: 'days_open', description: 'Days open', type: 'number', category: 'calculated' },
-  { dairyCompCode: 'DDRY', dbField: 'days_dry', description: 'Days dry', type: 'number', category: 'calculated' },
-  { dairyCompCode: 'DCC', dbField: 'days_carrying_calf', description: 'Days pregnant', type: 'number', category: 'calculated' },
-  { dairyCompCode: 'DUE', dbField: 'days_to_calving', description: 'Days until calving', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'DDRY', dbField: 'ddry', description: 'Days dry', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'DCC', dbField: 'dcc', description: 'Days carrying calf (days pregnant)', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'DUE', dbField: 'due', description: 'Days until calving (negative=overdue)', type: 'number', category: 'calculated' },
   { dairyCompCode: 'DSLH', dbField: 'days_since_last_heat', description: 'Days since last heat', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'DSLB', dbField: 'days_since_last_breeding', description: 'Days since last breeding', type: 'number', category: 'calculated' },
   { dairyCompCode: 'AGE', dbField: 'age_months', description: 'Age in months', type: 'number', category: 'calculated' },
-  { dairyCompCode: 'AGEFR', dbField: 'age_at_first_calving_months', description: 'Age at first calving', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'AGEFR', dbField: 'agefr', description: 'Age at first calving (months)', type: 'number', category: 'calculated' },
 
   // Health
   { dairyCompCode: 'VC', dbField: 'vet_code', description: 'Veterinary code', type: 'number', category: 'health' },

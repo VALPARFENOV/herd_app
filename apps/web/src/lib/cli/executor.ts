@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { CommandAST, Condition } from './parser-simple'
 import { dairyCompToDb, dbToDairyComp } from './field-mapping'
 import { rcCodeToStatus, statusToRcCode } from './rc-code-mapping'
+import { executeCount } from './commands/count'
+import { executeSum } from './commands/sum'
 
 export interface ExecutionResult {
   success: boolean
@@ -32,6 +34,14 @@ export async function executeCommand(ast: CommandAST): Promise<ExecutionResult> 
       case 'LIST':
       case 'SHOW':
         result = await executeList(ast)
+        break
+
+      case 'COUNT':
+        result = await executeCount(ast)
+        break
+
+      case 'SUM':
+        result = await executeSum(ast)
         break
 
       default:

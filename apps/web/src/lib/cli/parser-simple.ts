@@ -8,6 +8,7 @@ export interface CommandAST {
   items?: string[]
   conditions?: Condition[]
   sortBy?: SortClause
+  groupBy?: string // For COUNT BY, SUM BY
   switches?: string[]
   raw: string
 }
@@ -175,4 +176,187 @@ export function isValidCommand(command: string): boolean {
 export function getCommandType(command: string): string | null {
   const match = command.trim().match(/^([A-Z]+)/i)
   return match ? match[1].toUpperCase() : null
+}
+
+/**
+ * Main parser - dispatches to appropriate command parser
+ */
+export function parseCommand(command: string): CommandAST | ParseError {
+  const commandType = getCommandType(command)
+
+  switch (commandType) {
+    case 'LIST':
+    case 'SHOW':
+      return parseListCommand(command)
+
+    case 'COUNT':
+      return parseCountCommand(command)
+
+    case 'SUM':
+      return parseSumCommand(command)
+
+    default:
+      return {
+        message: `Command ${commandType} not yet supported`
+      }
+  }
+}
+
+/**
+ * Parse COUNT command
+ *
+ * Syntax:
+ * - COUNT ID - simple count
+ * - COUNT ID FOR RC=5 - count with conditions
+ * - COUNT BY PEN - grouped count
+ * - COUNT ID BY RC FOR DIM>60 - grouped count with conditions
+ */
+export function parseCountCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('COUNT')) {
+    return {
+      message: 'Command must start with COUNT',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(5).trim() // Remove 'COUNT'
+
+    // Extract conditions (FOR clause)
+    const conditions: Condition[] = []
+    const forMatch = remaining.match(/\s+FOR\s+/i)
+    if (forMatch && forMatch.index !== undefined) {
+      const conditionsString = remaining.slice(forMatch.index + forMatch[0].length)
+      remaining = remaining.slice(0, forMatch.index).trim()
+
+      // Parse conditions
+      const conditionTokens = conditionsString.split(/\s+AND\s+/i)
+      for (const token of conditionTokens) {
+        const cond = parseCondition(token.trim())
+        if (cond) {
+          conditions.push(cond)
+        }
+      }
+    }
+
+    // Extract groupBy clause (BY field)
+    let groupBy: string | undefined
+    const byMatch = remaining.match(/\s+BY\s+([A-Z][A-Z0-9]*)/i)
+    if (byMatch) {
+      groupBy = byMatch[1].toUpperCase()
+      remaining = remaining.slice(0, byMatch.index).trim()
+    }
+
+    // What's left are items (usually just ID)
+    const items: string[] = []
+    if (remaining) {
+      const itemTokens = remaining.split(/\s+/)
+      for (const token of itemTokens) {
+        if (token && /^[A-Z][A-Z0-9]*$/i.test(token)) {
+          items.push(token.toUpperCase())
+        }
+      }
+    }
+
+    return {
+      command: 'COUNT',
+      items: items.length > 0 ? items : undefined,
+      conditions: conditions.length > 0 ? conditions : undefined,
+      groupBy,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse SUM command
+ *
+ * Syntax:
+ * - SUM MILK LACT \A - averages (default)
+ * - SUM MILK LACT \T - totals
+ * - SUM MILK BY PEN \A - grouped averages
+ * - SUM MILK SCC \T BY RC FOR LACT=2 - grouped totals with conditions
+ */
+export function parseSumCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('SUM')) {
+    return {
+      message: 'Command must start with SUM',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(3).trim() // Remove 'SUM'
+
+    // Extract switches (\A, \T, etc.)
+    const switches: string[] = []
+    const switchPattern = /\\([A-Z0-9]+)/gi
+    let switchMatch
+    while ((switchMatch = switchPattern.exec(remaining)) !== null) {
+      switches.push(switchMatch[1])
+    }
+    // Remove switches from remaining
+    remaining = remaining.replace(switchPattern, '').trim()
+
+    // Extract conditions (FOR clause)
+    const conditions: Condition[] = []
+    const forMatch = remaining.match(/\s+FOR\s+/i)
+    if (forMatch && forMatch.index !== undefined) {
+      const conditionsString = remaining.slice(forMatch.index + forMatch[0].length)
+      remaining = remaining.slice(0, forMatch.index).trim()
+
+      // Parse conditions
+      const conditionTokens = conditionsString.split(/\s+AND\s+/i)
+      for (const token of conditionTokens) {
+        const cond = parseCondition(token.trim())
+        if (cond) {
+          conditions.push(cond)
+        }
+      }
+    }
+
+    // Extract groupBy clause (BY field)
+    let groupBy: string | undefined
+    const byMatch = remaining.match(/\s+BY\s+([A-Z][A-Z0-9]*)/i)
+    if (byMatch) {
+      groupBy = byMatch[1].toUpperCase()
+      remaining = remaining.slice(0, byMatch.index).trim()
+    }
+
+    // What's left are items (fields to aggregate)
+    const items: string[] = []
+    if (remaining) {
+      const itemTokens = remaining.split(/\s+/)
+      for (const token of itemTokens) {
+        if (token && /^[A-Z][A-Z0-9]*$/i.test(token)) {
+          items.push(token.toUpperCase())
+        }
+      }
+    }
+
+    return {
+      command: 'SUM',
+      items: items.length > 0 ? items : undefined,
+      conditions: conditions.length > 0 ? conditions : undefined,
+      groupBy,
+      switches: switches.length > 0 ? switches : undefined,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
 }
