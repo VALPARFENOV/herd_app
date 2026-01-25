@@ -80,6 +80,13 @@ export const FIELD_MAPPINGS: FieldMapping[] = [
   { dairyCompCode: 'VC', dbField: 'vet_code', description: 'Veterinary code', type: 'number', category: 'health' },
   { dairyCompCode: 'BCS', dbField: 'last_body_condition_score', description: 'Body condition score', type: 'number', category: 'health' },
 
+  // Economic/Valuation (COWVAL)
+  { dairyCompCode: 'CWVAL', dbField: 'total_value', description: 'Total cow value (currency)', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'RELV', dbField: 'relative_value', description: 'Relative value (% vs heifer cost)', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'PGVAL', dbField: 'pregnancy_value', description: 'Pregnancy value component', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'PRODV', dbField: 'production_value', description: 'Production value component', type: 'number', category: 'calculated' },
+  { dairyCompCode: 'GENVAL', dbField: 'genetic_value', description: 'Genetic value component', type: 'number', category: 'calculated' },
+
   // Management
   { dairyCompCode: 'NOTE', dbField: 'permanent_note', description: 'Permanent note', type: 'string', category: 'management' },
 ]

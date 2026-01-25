@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "supabase-herdmaster": {
+      "command": "ssh",
+      "args": [
+        "root@31.129.98.96",
+        "docker",
+        "exec",
+        "-i",
+        "supabase-mcp",
+        "node",
+        "dist/index.js"
+      ],
+      "description": "Self-hosted Supabase MCP server for HerdMaster Pro via SSH"
+    }
+  },
+  "allowedMcpServers": [
+    "supabase-herdmaster"
+  ]
+}

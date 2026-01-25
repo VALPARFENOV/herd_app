@@ -12,6 +12,8 @@ import { executeSum } from './commands/sum'
 import { executeBredsum } from './commands/bredsum'
 import { executePlot } from './commands/plot'
 import { executeEvents } from './commands/events'
+import { executeEcon } from './commands/econ'
+import { executeCowval } from './commands/cowval'
 
 export interface ExecutionResult {
   success: boolean
@@ -57,6 +59,14 @@ export async function executeCommand(ast: CommandAST): Promise<ExecutionResult> 
 
       case 'EVENTS':
         result = await executeEvents(ast)
+        break
+
+      case 'ECON':
+        result = await executeEcon(ast)
+        break
+
+      case 'COWVAL':
+        result = await executeCowval(ast)
         break
 
       default:

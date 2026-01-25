@@ -188,7 +188,29 @@ SELECT
 
     -- CALF1-3: Recent calf IDs (as JSONB array)
     recent_calves.calf_ids AS recent_calf_ids,
-    recent_calves.calf_ear_tags AS recent_calf_ear_tags
+    recent_calves.calf_ear_tags AS recent_calf_ear_tags,
+
+    -- ========================================================================
+    -- ECONOMIC/VALUATION FIELDS (Phase 4 - COWVAL)
+    -- ========================================================================
+
+    -- CWVAL: Total cow value
+    cv.total_value,
+
+    -- RELV: Relative value (percentage vs heifer baseline cost)
+    cv.relative_value,
+
+    -- PGVAL: Pregnancy value component
+    cv.pregnancy_value,
+
+    -- PRODV: Production value component
+    cv.production_value,
+
+    -- GENVAL: Genetic value component (placeholder for genomic data)
+    cv.genetic_value,
+
+    -- Age adjustment multiplier (used in valuation calculation)
+    cv.age_adjustment
 
 FROM public.animals a
 
@@ -370,6 +392,9 @@ LEFT JOIN LATERAL (
     ) c
 ) recent_calves ON true
 
+-- Cow valuation (COWVAL fields from cow_valuations table)
+LEFT JOIN public.cow_valuations cv ON cv.animal_id = a.id
+
 WHERE a.deleted_at IS NULL;
 
 -- ============================================================================
@@ -386,10 +411,10 @@ ALTER VIEW public.animals_with_calculated SET (security_invoker = true);
 -- ============================================================================
 
 COMMENT ON VIEW public.animals_with_calculated IS
-'Expanded calculated fields view: 26 DairyComp-compatible fields including DIM, DCC, AGE, DOPN, TBRD, LGSCC, FCM, 305ME, previous lactation metrics, and more';
+'Expanded calculated fields view: 32 DairyComp-compatible fields including DIM, DCC, AGE, DOPN, TBRD, LGSCC, FCM, 305ME, previous lactation metrics, breeding fields, and COWVAL economic valuations';
 
 -- ============================================================================
 -- VERIFICATION
 -- ============================================================================
 
-SELECT 'Calculated fields view expanded: 6 → 26 fields' AS status;
+SELECT 'Calculated fields view expanded: 6 → 32 fields (including COWVAL)' AS status;

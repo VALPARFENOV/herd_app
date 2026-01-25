@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "supabase-herdmaster": {
+      "url": "http://localhost:8080/mcp",
+      "description": "Self-hosted Supabase MCP server for HerdMaster Pro (herd.b2bautomate.ru)"
+    }
+  },
+  "allowedMcpServers": [
+    "supabase-herdmaster"
+  ]
+}

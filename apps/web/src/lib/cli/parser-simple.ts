@@ -204,6 +204,12 @@ export function parseCommand(command: string): CommandAST | ParseError {
     case 'EVENTS':
       return parseEventsCommand(command)
 
+    case 'ECON':
+      return parseEconCommand(command)
+
+    case 'COWVAL':
+      return parseCowvalCommand(command)
+
     default:
       return {
         message: `Command ${commandType} not yet supported`
@@ -545,6 +551,119 @@ export function parseEventsCommand(command: string): CommandAST | ParseError {
     return {
       command: 'EVENTS',
       items: items.length > 0 ? items : undefined,
+      conditions: conditions.length > 0 ? conditions : undefined,
+      switches: switches.length > 0 ? switches : undefined,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse ECON command (Economic analysis)
+ *
+ * Syntax: ECON [\variant]
+ *
+ * Variants:
+ * - ECON - Basic economic summary (revenue, costs, IOFC)
+ * - ECON\PEN - IOFC analysis by pen
+ * - ECON\TREND or ECON\T - Profitability trends over time
+ * - ECON\COSTS or ECON\C - Cost breakdown by type
+ */
+export function parseEconCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('ECON')) {
+    return {
+      message: 'Command must start with ECON',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(4).trim() // Remove 'ECON'
+
+    // Extract switches (\PEN, \TREND, \COSTS, etc.)
+    const switches: string[] = []
+    const switchPattern = /\\([A-Z0-9]+)/gi
+    let switchMatch
+    while ((switchMatch = switchPattern.exec(remaining)) !== null) {
+      switches.push(switchMatch[1].toUpperCase())
+    }
+
+    return {
+      command: 'ECON',
+      switches: switches.length > 0 ? switches : undefined,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse COWVAL command (Cow valuation analysis)
+ *
+ * Syntax: COWVAL [\variant] [FOR conditions]
+ *
+ * Variants:
+ * - COWVAL - Basic valuation report (sorted by relative value)
+ * - COWVAL\UPDATE or COWVAL\U - Update all cow valuations
+ * - COWVAL\SUMMARY or COWVAL\S - Herd-level valuation statistics
+ * - COWVAL\TOP or COWVAL\T - Top 20 highest valued cows
+ * - COWVAL\BOTTOM or COWVAL\B - Bottom 20 lowest valued cows (cull candidates)
+ */
+export function parseCowvalCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('COWVAL')) {
+    return {
+      message: 'Command must start with COWVAL',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(6).trim() // Remove 'COWVAL'
+
+    // Extract switches (\UPDATE, \SUMMARY, \TOP, \BOTTOM, etc.)
+    const switches: string[] = []
+    const switchPattern = /\\([A-Z0-9]+)/gi
+    let switchMatch
+    while ((switchMatch = switchPattern.exec(remaining)) !== null) {
+      switches.push(switchMatch[1].toUpperCase())
+    }
+    // Remove switches from remaining
+    remaining = remaining.replace(switchPattern, '').trim()
+
+    // Extract conditions (FOR clause) - similar to LIST command
+    const conditions: Condition[] = []
+    const forMatch = remaining.match(/\s+FOR\s+/i)
+    if (forMatch && forMatch.index !== undefined) {
+      const conditionsString = remaining.slice(forMatch.index + forMatch[0].length)
+      remaining = remaining.slice(0, forMatch.index).trim()
+
+      // Parse conditions
+      const conditionTokens = conditionsString.split(/\s+AND\s+/i)
+      for (const token of conditionTokens) {
+        const cond = parseCondition(token.trim())
+        if (cond) {
+          conditions.push(cond)
+        }
+      }
+    }
+
+    return {
+      command: 'COWVAL',
       conditions: conditions.length > 0 ? conditions : undefined,
       switches: switches.length > 0 ? switches : undefined,
       raw: trimmed
