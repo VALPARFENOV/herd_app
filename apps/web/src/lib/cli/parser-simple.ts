@@ -198,6 +198,12 @@ export function parseCommand(command: string): CommandAST | ParseError {
     case 'BREDSUM':
       return parseBredsumCommand(command)
 
+    case 'PLOT':
+      return parsePlotCommand(command)
+
+    case 'EVENTS':
+      return parseEventsCommand(command)
+
     default:
       return {
         message: `Command ${commandType} not yet supported`
@@ -408,6 +414,138 @@ export function parseBredsumCommand(command: string): CommandAST | ParseError {
 
     return {
       command: 'BREDSUM',
+      switches: switches.length > 0 ? switches : undefined,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse PLOT command
+ *
+ * Syntax:
+ * - PLOT MILK BY DIM - Lactation curves
+ * - PLOT MILK BY TDAT - Time series
+ * - PLOT 305ME BY LACT - Group comparison
+ * - PLOT MILK BY PEN - Location comparison
+ * - PLOT MILK FAT PROTEIN BY DIM - Multiple fields
+ */
+export function parsePlotCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('PLOT')) {
+    return {
+      message: 'Command must start with PLOT',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(4).trim() // Remove 'PLOT'
+
+    // Extract groupBy clause (BY field)
+    let groupBy: string | undefined
+    const byMatch = remaining.match(/\s+BY\s+([A-Z][A-Z0-9]*)/i)
+    if (byMatch) {
+      groupBy = byMatch[1].toUpperCase()
+      remaining = remaining.slice(0, byMatch.index).trim()
+    }
+
+    // What's left are items (fields to plot)
+    const items: string[] = []
+    if (remaining) {
+      const itemTokens = remaining.split(/\s+/)
+      for (const token of itemTokens) {
+        if (token && /^[A-Z][A-Z0-9]*$/i.test(token)) {
+          items.push(token.toUpperCase())
+        }
+      }
+    }
+
+    return {
+      command: 'PLOT',
+      items: items.length > 0 ? items : undefined,
+      groupBy,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse EVENTS command
+ *
+ * Syntax:
+ * - EVENTS - Standard event listing
+ * - EVENTS\si - Specific items display with custom fields
+ * - EVENTS FOR RC=3 - With conditions
+ */
+export function parseEventsCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('EVENTS')) {
+    return {
+      message: 'Command must start with EVENTS',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(6).trim() // Remove 'EVENTS'
+
+    // Extract switches (\si, etc.)
+    const switches: string[] = []
+    const switchPattern = /\\([A-Z0-9]+)/gi
+    let switchMatch
+    while ((switchMatch = switchPattern.exec(remaining)) !== null) {
+      switches.push(switchMatch[1].toUpperCase())
+    }
+    // Remove switches from remaining
+    remaining = remaining.replace(switchPattern, '').trim()
+
+    // Extract conditions (FOR clause) - similar to LIST command
+    const conditions: Condition[] = []
+    const forMatch = remaining.match(/\s+FOR\s+/i)
+    if (forMatch && forMatch.index !== undefined) {
+      const conditionsString = remaining.slice(forMatch.index + forMatch[0].length)
+      remaining = remaining.slice(0, forMatch.index).trim()
+
+      // Parse conditions
+      const conditionTokens = conditionsString.split(/\s+AND\s+/i)
+      for (const token of conditionTokens) {
+        const cond = parseCondition(token.trim())
+        if (cond) {
+          conditions.push(cond)
+        }
+      }
+    }
+
+    // What's left are items (custom fields for \si variant)
+    const items: string[] = []
+    if (remaining) {
+      const itemTokens = remaining.split(/\s+/)
+      for (const token of itemTokens) {
+        if (token && /^[A-Z][A-Z0-9]*$/i.test(token)) {
+          items.push(token.toUpperCase())
+        }
+      }
+    }
+
+    return {
+      command: 'EVENTS',
+      items: items.length > 0 ? items : undefined,
+      conditions: conditions.length > 0 ? conditions : undefined,
       switches: switches.length > 0 ? switches : undefined,
       raw: trimmed
     }

@@ -10,6 +10,8 @@ import { rcCodeToStatus, statusToRcCode } from './rc-code-mapping'
 import { executeCount } from './commands/count'
 import { executeSum } from './commands/sum'
 import { executeBredsum } from './commands/bredsum'
+import { executePlot } from './commands/plot'
+import { executeEvents } from './commands/events'
 
 export interface ExecutionResult {
   success: boolean
@@ -47,6 +49,14 @@ export async function executeCommand(ast: CommandAST): Promise<ExecutionResult> 
 
       case 'BREDSUM':
         result = await executeBredsum(ast)
+        break
+
+      case 'PLOT':
+        result = await executePlot(ast)
+        break
+
+      case 'EVENTS':
+        result = await executeEvents(ast)
         break
 
       default:
