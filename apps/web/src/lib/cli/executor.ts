@@ -9,6 +9,7 @@ import { dairyCompToDb, dbToDairyComp } from './field-mapping'
 import { rcCodeToStatus, statusToRcCode } from './rc-code-mapping'
 import { executeCount } from './commands/count'
 import { executeSum } from './commands/sum'
+import { executeBredsum } from './commands/bredsum'
 
 export interface ExecutionResult {
   success: boolean
@@ -42,6 +43,10 @@ export async function executeCommand(ast: CommandAST): Promise<ExecutionResult> 
 
       case 'SUM':
         result = await executeSum(ast)
+        break
+
+      case 'BREDSUM':
+        result = await executeBredsum(ast)
         break
 
       default:

@@ -35,9 +35,15 @@ export const FIELD_MAPPINGS: FieldMapping[] = [
   { dairyCompCode: 'RPRO', dbField: 'reproductive_status', description: 'Reproductive code (alias)', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'TBRD', dbField: 'tbrd', description: 'Times bred this lactation', type: 'number', category: 'reproduction' },
   { dairyCompCode: 'SPC', dbField: 'spc', description: 'Services per conception', type: 'number', category: 'reproduction' },
-  { dairyCompCode: 'SIRC', dbField: 'sire_of_conception', description: 'Sire of conception', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'SIRC', dbField: 'sirc', description: 'Sire of conception (bull ID)', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'SIRC_NAME', dbField: 'sirc_name', description: 'Sire of conception (bull name)', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'SIR1', dbField: 'recent_sire_ids', description: 'Last 4 breeding bulls (IDs)', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'SIRS', dbField: 'recent_sire_names', description: 'Last 4 breeding bulls (names)', type: 'string', category: 'reproduction' },
   { dairyCompCode: 'LSIR', dbField: 'last_breeding_bull_id', description: 'Last service sire', type: 'string', category: 'reproduction' },
   { dairyCompCode: 'HINT', dbField: 'hint', description: 'Heat interval (days)', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'DCCP', dbField: 'dccp', description: 'DCC at pregnancy check (days)', type: 'number', category: 'reproduction' },
+  { dairyCompCode: 'CALF_IDS', dbField: 'recent_calf_ids', description: 'Recent calf IDs (last 3)', type: 'string', category: 'reproduction' },
+  { dairyCompCode: 'CALF_TAGS', dbField: 'recent_calf_ear_tags', description: 'Recent calf ear tags (last 3)', type: 'string', category: 'reproduction' },
 
   // Production - Current Lactation (Items 44-55)
   { dairyCompCode: 'TOTM', dbField: 'totm', description: 'Total milk this lactation (kg)', type: 'number', category: 'production' },

@@ -164,7 +164,31 @@ SELECT
              AND a.conception_date IS NOT NULL
         THEN breed_preg_count.services_to_conception
         ELSE NULL
-    END AS spc
+    END AS spc,
+
+    -- ========================================================================
+    -- BREEDING-SPECIFIC FIELDS (Phase 2)
+    -- ========================================================================
+
+    -- SIRC: Sire of conception (bull used for conception breeding)
+    conception_sire.bull_id AS sirc,
+    conception_sire.bull_name AS sirc_name,
+
+    -- SIR1-4: Last 4 breeding bulls (as JSONB array)
+    recent_sires.bull_ids AS recent_sire_ids,
+    recent_sires.bull_names AS recent_sire_names,
+
+    -- DCCP: DCC at pregnancy check (gestation days when pregnancy was confirmed)
+    CASE
+        WHEN a.pregnancy_confirmed_date IS NOT NULL
+             AND a.conception_date IS NOT NULL
+        THEN (a.pregnancy_confirmed_date - a.conception_date)::INTEGER
+        ELSE NULL
+    END AS dccp,
+
+    -- CALF1-3: Recent calf IDs (as JSONB array)
+    recent_calves.calf_ids AS recent_calf_ids,
+    recent_calves.calf_ear_tags AS recent_calf_ear_tags
 
 FROM public.animals a
 
@@ -303,6 +327,48 @@ LEFT JOIN LATERAL (
       AND e.event_date >= a.last_calving_date
       AND e.event_date <= a.conception_date
 ) breed_preg_count ON true
+
+-- Sire of conception (bull that resulted in pregnancy)
+LEFT JOIN LATERAL (
+    SELECT
+        e.details->>'bull_id' AS bull_id,
+        e.details->>'bull_name' AS bull_name
+    FROM public.events e
+    WHERE e.animal_id = a.id
+      AND e.event_type = 'breeding'
+      AND a.conception_date IS NOT NULL
+      AND e.event_date = a.conception_date
+    LIMIT 1
+) conception_sire ON true
+
+-- Recent sires (last 4 breeding bulls)
+LEFT JOIN LATERAL (
+    SELECT
+        jsonb_agg(e.details->>'bull_id' ORDER BY e.event_date DESC) AS bull_ids,
+        jsonb_agg(e.details->>'bull_name' ORDER BY e.event_date DESC) AS bull_names
+    FROM (
+        SELECT details, event_date
+        FROM public.events
+        WHERE animal_id = a.id
+          AND event_type = 'breeding'
+        ORDER BY event_date DESC
+        LIMIT 4
+    ) e
+) recent_sires ON true
+
+-- Recent calves (last 3 offspring)
+LEFT JOIN LATERAL (
+    SELECT
+        jsonb_agg(c.id ORDER BY c.birth_date DESC) AS calf_ids,
+        jsonb_agg(c.ear_tag ORDER BY c.birth_date DESC) AS calf_ear_tags
+    FROM (
+        SELECT id, ear_tag, birth_date
+        FROM public.animals
+        WHERE dam_id = a.id
+        ORDER BY birth_date DESC
+        LIMIT 3
+    ) c
+) recent_calves ON true
 
 WHERE a.deleted_at IS NULL;
 

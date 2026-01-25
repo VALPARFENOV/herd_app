@@ -195,6 +195,9 @@ export function parseCommand(command: string): CommandAST | ParseError {
     case 'SUM':
       return parseSumCommand(command)
 
+    case 'BREDSUM':
+      return parseBredsumCommand(command)
+
     default:
       return {
         message: `Command ${commandType} not yet supported`
@@ -350,6 +353,61 @@ export function parseSumCommand(command: string): CommandAST | ParseError {
       items: items.length > 0 ? items : undefined,
       conditions: conditions.length > 0 ? conditions : undefined,
       groupBy,
+      switches: switches.length > 0 ? switches : undefined,
+      raw: trimmed
+    }
+
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Parse error'
+    }
+  }
+}
+
+/**
+ * Parse BREDSUM command
+ *
+ * Syntax:
+ * - BREDSUM - basic breeding summary by lactation
+ * - BREDSUM \B - by service number
+ * - BREDSUM \C - by calendar month
+ * - BREDSUM \T - by technician
+ * - BREDSUM \S - by sire
+ * - BREDSUM \P - by pen
+ * - BREDSUM \E - 21-day pregnancy rates
+ * - BREDSUM \H - heat detection
+ * - BREDSUM \Q - Q-Sum cumulative conception rate
+ * - BREDSUM \N - by DIM range
+ * - BREDSUM \W - by day of week
+ * - BREDSUM \PG - prostaglandin protocols
+ */
+export function parseBredsumCommand(command: string): CommandAST | ParseError {
+  const trimmed = command.trim()
+  const upper = trimmed.toUpperCase()
+
+  if (!upper.startsWith('BREDSUM')) {
+    return {
+      message: 'Command must start with BREDSUM',
+      position: 0
+    }
+  }
+
+  try {
+    let remaining = trimmed.slice(7).trim() // Remove 'BREDSUM'
+
+    // Extract switches (\B, \C, \T, \S, \P, \E, \H, \Q, \N, \W, \PG)
+    const switches: string[] = []
+    const switchPattern = /\\([A-Z0-9]+)/gi
+    let switchMatch
+    while ((switchMatch = switchPattern.exec(remaining)) !== null) {
+      switches.push(switchMatch[1].toUpperCase())
+    }
+
+    // BREDSUM typically doesn't have items or conditions
+    // It operates on all breeding data within a date range (handled by RPC functions)
+
+    return {
+      command: 'BREDSUM',
       switches: switches.length > 0 ? switches : undefined,
       raw: trimmed
     }
