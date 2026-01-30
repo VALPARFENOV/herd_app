@@ -32,7 +32,35 @@ interface HealthTabProps {
 
 export function HealthTab({ animal, events, hoofInspections, udderTestSessions }: HealthTabProps) {
   const treatmentEvents = events.filter(e => ['treatment', 'vaccination'].includes(e.event_type))
-  const hasActiveRestriction = false // TODO: Calculate from treatments with active withdrawal
+
+  // Calculate active withdrawal restrictions from treatment events
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const activeRestrictions = treatmentEvents
+    .filter(e => {
+      const details = e.details as Record<string, unknown>
+      if (!details?.withdrawal_date) return false
+      const withdrawalDate = new Date(details.withdrawal_date as string)
+      return withdrawalDate >= today
+    })
+    .map(e => {
+      const details = e.details as Record<string, unknown>
+      return {
+        drug: details.drug as string | undefined,
+        diagnosis: details.diagnosis as string | undefined,
+        withdrawalDate: new Date(details.withdrawal_date as string),
+        eventDate: new Date(e.event_date),
+      }
+    })
+
+  const hasActiveRestriction = activeRestrictions.length > 0
+  const latestWithdrawalDate = hasActiveRestriction
+    ? activeRestrictions.reduce(
+        (latest, r) => (r.withdrawalDate > latest ? r.withdrawalDate : latest),
+        activeRestrictions[0].withdrawalDate
+      )
+    : null
 
   // Real hoof inspection data
   const latestHoofInspection = hoofInspections.length > 0 ? hoofInspections[0] : null
@@ -79,11 +107,25 @@ export function HealthTab({ animal, events, hoofInspections, udderTestSessions }
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {hasActiveRestriction
-              ? "Milk cannot be shipped to tank until withdrawal period ends"
-              : "Milk can be shipped to tank"}
-          </p>
+          {hasActiveRestriction ? (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                Milk cannot be shipped to tank until withdrawal period ends
+              </p>
+              <p className="text-sm font-medium text-red-700">
+                Withdrawal ends: {latestWithdrawalDate!.toLocaleDateString()}
+              </p>
+              {activeRestrictions.map((r, idx) => (
+                <p key={idx} className="text-xs text-muted-foreground">
+                  {r.drug || r.diagnosis || 'Treatment'} (treated {r.eventDate.toLocaleDateString()})
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Milk can be shipped to tank
+            </p>
+          )}
         </CardContent>
       </Card>
 
