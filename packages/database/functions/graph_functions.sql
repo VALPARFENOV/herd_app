@@ -2,11 +2,16 @@
 -- RPC functions for histograms and distribution analysis
 -- Phase 3: Production Analysis
 
+-- Drop old overloaded signatures to avoid PostgREST ambiguity
+DROP FUNCTION IF EXISTS public.calculate_histogram(UUID, TEXT, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS public.get_field_statistics(UUID, TEXT, INTEGER);
+DROP FUNCTION IF EXISTS public.calculate_scatter(UUID, TEXT, TEXT, INTEGER, INTEGER);
+
 -- ============================================================================
 -- GRAPH HISTOGRAM - Distribution Analysis
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.calculate_histogram(
+CREATE OR REPLACE FUNCTION public.graph_histogram(
     p_tenant_id UUID,
     p_field TEXT DEFAULT 'milk_kg',
     p_bin_count INTEGER DEFAULT 10,
@@ -98,16 +103,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
-COMMENT ON FUNCTION public.calculate_histogram IS
+COMMENT ON FUNCTION public.graph_histogram IS
 'GRAPH: Returns histogram distribution for specified field with configurable bin count';
 
-GRANT EXECUTE ON FUNCTION public.calculate_histogram TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.graph_histogram TO authenticated, service_role;
 
 -- ============================================================================
 -- GRAPH SCATTER - Correlation Analysis
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.calculate_scatter(
+CREATE OR REPLACE FUNCTION public.graph_scatter(
     p_tenant_id UUID,
     p_x_field TEXT DEFAULT 'dim',
     p_y_field TEXT DEFAULT 'milk_kg',
@@ -162,16 +167,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
-COMMENT ON FUNCTION public.calculate_scatter IS
+COMMENT ON FUNCTION public.graph_scatter IS
 'GRAPH: Returns scatter plot data for correlation analysis between two fields';
 
-GRANT EXECUTE ON FUNCTION public.calculate_scatter TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.graph_scatter TO authenticated, service_role;
 
 -- ============================================================================
 -- GRAPH STATS - Field Statistics
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.get_field_statistics(
+CREATE OR REPLACE FUNCTION public.graph_field_statistics(
     p_tenant_id UUID,
     p_field TEXT DEFAULT 'milk_kg',
     p_lactation_filter INTEGER DEFAULT NULL
@@ -219,13 +224,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
-COMMENT ON FUNCTION public.get_field_statistics IS
+COMMENT ON FUNCTION public.graph_field_statistics IS
 'Returns comprehensive statistics for a field including mean, median, std dev, quartiles';
 
-GRANT EXECUTE ON FUNCTION public.get_field_statistics TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.graph_field_statistics TO authenticated, service_role;
 
 -- ============================================================================
 -- VERIFICATION
 -- ============================================================================
 
-SELECT 'GRAPH functions created: calculate_histogram, calculate_scatter, get_field_statistics' AS status;
+SELECT 'GRAPH functions created: graph_histogram, graph_scatter, graph_field_statistics' AS status;
