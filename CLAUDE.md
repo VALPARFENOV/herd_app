@@ -151,6 +151,39 @@ Tests should be placed in:
 - **Production:** Supabase self-hosted on Beget VPS
 - **Enterprise:** Dedicated installation via `deploy/docker-compose.dedicated.yml`
 
+## Supabase Agent (`/supabase`)
+
+Slash command for managing the self-hosted Supabase instance.
+
+### Usage
+
+```
+/supabase deploy <function-name>
+/supabase deploy all
+/supabase status
+/supabase logs <service> [lines]
+/supabase restart <service>
+/supabase query "SELECT ..."
+/supabase migrate <file>
+/supabase migrate all
+/supabase create user
+/supabase seed
+/supabase env
+```
+
+### Scripts Reference
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/supabase-status.sh` | Docker services, disk, memory status |
+| `scripts/supabase-logs.sh` | View service logs |
+| `scripts/db-query.sh` | Execute SQL (inline or `--file`) |
+| `scripts/deploy-edge-function.sh` | Deploy single function (`--no-restart`, `--dry-run`) |
+| `scripts/deploy-all-functions.sh` | Deploy all functions with single restart |
+| `scripts/apply-migration.sh` | Apply single migration to REMOTE server |
+| `scripts/apply-all-migrations.sh` | Apply all migrations (`--from`, `--include-initial`) |
+| `scripts/create-user.sh` | Create auth + profile user (`--tenant` required) |
+
 ## Session Logs
 
 После каждой рабочей сессии перед коммитом записывай краткий итог в файл:
