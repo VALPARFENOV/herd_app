@@ -12,14 +12,13 @@ interface EditAnimalPageProps {
 
 export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
   const { id } = await params
-  const [animal, pens] = await Promise.all([
-    getAnimalById(id),
-    getPens(),
-  ])
+  const animal = await getAnimalById(id)
 
   if (!animal) {
     notFound()
   }
+
+  const pens = await getPens()
 
   return (
     <div className="space-y-6">

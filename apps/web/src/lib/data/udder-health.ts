@@ -56,7 +56,7 @@ export async function getUdderTests(animalId: string): Promise<UdderQuarterTest[
     return []
   }
 
-  return data.map((test) => ({
+  return data.map((test: any) => ({
     id: test.id,
     animalId: test.animal_id,
     testDate: test.test_date,
@@ -158,11 +158,11 @@ export async function getUdderHealthStats(tenantId?: string): Promise<{
   const supabase = await createClient()
 
   // Get latest SCC tests per animal
-  const { data } = await supabase
+  const { data } = await (supabase
     .from('udder_quarter_tests')
     .select('animal_id, test_date, result_value, pathogen')
     .eq('test_type', 'scc')
-    .order('test_date', { ascending: false })
+    .order('test_date', { ascending: false }) as any)
 
   if (!data || data.length === 0) {
     return {
@@ -176,7 +176,7 @@ export async function getUdderHealthStats(tenantId?: string): Promise<{
   // Get latest test per animal
   const latestPerAnimal = new Map<string, { resultValue: number | null; pathogen: string | null }>()
 
-  data.forEach((test) => {
+  data.forEach((test: any) => {
     if (!latestPerAnimal.has(test.animal_id)) {
       latestPerAnimal.set(test.animal_id, {
         resultValue: test.result_value,

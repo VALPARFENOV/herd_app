@@ -98,14 +98,6 @@ export function AnimalsListClient({ animals, stats }: AnimalsListClientProps) {
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>Showing {filteredAnimals.length} of {animals.length} animals</div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
-        </div>
       </div>
     </div>
   )

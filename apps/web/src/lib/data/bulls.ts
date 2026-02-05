@@ -144,7 +144,7 @@ export async function getBullById(id: string): Promise<Bull | null> {
     return null
   }
 
-  return data as Bull
+  return data as unknown as Bull
 }
 
 /**
@@ -165,7 +165,7 @@ export async function getSemenInventory(bullId: string): Promise<SemenInventory[
     return []
   }
 
-  return data as SemenInventory[]
+  return data as unknown as SemenInventory[]
 }
 
 /**

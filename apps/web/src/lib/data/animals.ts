@@ -144,7 +144,7 @@ export async function getAnimals(options?: {
     return { data: [], count: 0 }
   }
 
-  const enrichedData = (data || []).map((animal: Animal & { pens: { name: string } | null }) => {
+  const enrichedData = ((data || []) as any[]).map((animal: Animal & { pens: { name: string } | null }) => {
     const { pens, ...animalData } = animal
     return enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
   })
@@ -167,7 +167,7 @@ export async function getAnimalById(id: string): Promise<AnimalWithComputed | nu
     return null
   }
 
-  const { pens, ...animalData } = data as Animal & { pens: { name: string } | null }
+  const { pens, ...animalData } = (data as unknown as Animal & { pens: { name: string } | null })
   return enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
 }
 

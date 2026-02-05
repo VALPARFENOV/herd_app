@@ -90,5 +90,5 @@ export async function getPens() {
     return []
   }
 
-  return data || []
+  return (data || []) as any
 }

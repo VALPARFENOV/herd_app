@@ -55,9 +55,9 @@ export async function getFreshCheckList(): Promise<VetListAnimal[]> {
     ear_tag: animal.ear_tag,
     name: animal.name,
     current_status: animal.current_status,
-    current_lactation: animal.current_lactation,
+    current_lactation: animal.lactation_number,
     dim: calculateDIM(animal.last_calving_date),
-    pen_name: animal.pens?.name || null,
+    pen_name: (animal.pens as any)?.name || null,
     last_calving_date: animal.last_calving_date,
     withdrawal_end_date: null,
     withdrawal_days_remaining: null,
@@ -74,7 +74,7 @@ export async function getActiveTreatmentsList(): Promise<VetListAnimal[]> {
 
   // Get animals with active withdrawal using the helper function
   const { data: withdrawalData, error: withdrawalError } = await supabase.rpc(
-    'get_animals_with_active_withdrawal',
+    'get_animals_with_active_withdrawal' as any,
     { p_tenant_id: '11111111-1111-1111-1111-111111111111' }
   )
 
@@ -123,13 +123,13 @@ export async function getActiveTreatmentsList(): Promise<VetListAnimal[]> {
       ear_tag: animal.ear_tag,
       name: animal.name,
       current_status: animal.current_status,
-      current_lactation: animal.current_lactation,
+      current_lactation: animal.lactation_number,
       dim: calculateDIM(animal.last_calving_date),
-      pen_name: animal.pens?.name || null,
+      pen_name: (animal.pens as any)?.name || null,
       last_calving_date: animal.last_calving_date,
       withdrawal_end_date: withdrawalInfo?.withdrawal_end_date || null,
       withdrawal_days_remaining: withdrawalInfo?.days_remaining || null,
-      diagnosis: latestTreatment?.details?.diagnosis || null,
+      diagnosis: (latestTreatment?.details as any)?.diagnosis || null,
       treatment_date: latestTreatment?.event_date || null,
     }
   })
@@ -177,13 +177,13 @@ export async function getSickPenList(): Promise<VetListAnimal[]> {
       ear_tag: animal.ear_tag,
       name: animal.name,
       current_status: animal.current_status,
-      current_lactation: animal.current_lactation,
+      current_lactation: animal.lactation_number,
       dim: calculateDIM(animal.last_calving_date),
-      pen_name: animal.pens?.name || null,
+      pen_name: (animal.pens as any)?.name || null,
       last_calving_date: animal.last_calving_date,
       withdrawal_end_date: null,
       withdrawal_days_remaining: null,
-      diagnosis: latestTreatment?.details?.diagnosis || null,
+      diagnosis: (latestTreatment?.details as any)?.diagnosis || null,
       treatment_date: latestTreatment?.event_date || null,
     }
   })

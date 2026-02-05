@@ -16,7 +16,7 @@ export interface FieldMapping {
 export const FIELD_MAPPINGS: FieldMapping[] = [
   // Identification (Items 1-10)
   { dairyCompCode: 'ID', dbField: 'ear_tag', description: 'Animal identifier', type: 'string', category: 'identification' },
-  { dairyCompCode: 'PEN', dbField: 'pen_id', description: 'Pen number', type: 'string', category: 'identification' },
+  { dairyCompCode: 'PEN', dbField: 'pen_name', description: 'Pen name', type: 'string', category: 'identification' },
   { dairyCompCode: 'REG', dbField: 'registration_number', description: 'Registration number', type: 'string', category: 'identification' },
   { dairyCompCode: 'EID', dbField: 'electronic_id', description: 'Electronic ID (RFID)', type: 'string', category: 'identification' },
   { dairyCompCode: 'NAME', dbField: 'name', description: 'Animal name', type: 'string', category: 'identification' },

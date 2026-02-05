@@ -14,13 +14,15 @@ export function QualityMetricsCard({
   bulkTankStats,
   highSCCCount,
 }: QualityMetricsCardProps) {
-  const getSCCBadgeColor = (scc: number) => {
+  const getSCCBadgeColor = (scc: number | null | undefined) => {
+    if (scc == null) return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
     if (scc < 200000) return 'bg-green-100 text-green-800 hover:bg-green-100'
     if (scc < 400000) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
     return 'bg-red-100 text-red-800 hover:bg-red-100'
   }
 
-  const formatSCC = (scc: number) => {
+  const formatSCC = (scc: number | null | undefined) => {
+    if (scc == null) return 'N/A'
     if (scc >= 1000000) return `${(scc / 1000000).toFixed(1)}M`
     if (scc >= 1000) return `${(scc / 1000).toFixed(0)}K`
     return scc.toString()
@@ -102,7 +104,6 @@ export function QualityMetricsCard({
                   <Badge
                     variant="outline"
                     className={getSCCBadgeColor(bulkTankStats.avg_scc)}
-                    size="sm"
                   >
                     {formatSCC(bulkTankStats.avg_scc)}
                   </Badge>

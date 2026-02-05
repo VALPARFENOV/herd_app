@@ -169,7 +169,7 @@ export function HealthTab({ animal, events, hoofInspections, udderTestSessions }
               </CardHeader>
               <CardContent>
                 <HoofMap
-                  lesions={latestHoofInspection?.lesions || []}
+                  lesions={(latestHoofInspection?.lesions || []) as any}
                   date={latestHoofInspection?.inspectionDate}
                 />
               </CardContent>

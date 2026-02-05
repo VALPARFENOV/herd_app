@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const updates = [
     { id: 'a0000001-0000-0000-0000-000000000001', status: 'open' },

@@ -99,11 +99,12 @@ export default function EconomicsDashboardPage() {
       }
 
       // Parse economics data
-      if (econData && econData.length > 0) {
-        const revenueRow = econData.find((r: any) => r.metric === 'Total Milk Revenue')
-        const costsRow = econData.find((r: any) => r.metric === 'Total Feed Costs')
-        const iofcRow = econData.find((r: any) => r.metric === 'IOFC (Income Over Feed Cost)')
-        const profitRow = econData.find((r: any) => r.metric === 'Net Profit')
+      const econDataArray = (econData as any[]) || []
+      if (econDataArray.length > 0) {
+        const revenueRow = econDataArray.find((r: any) => r.metric === 'Total Milk Revenue')
+        const costsRow = econDataArray.find((r: any) => r.metric === 'Total Feed Costs')
+        const iofcRow = econDataArray.find((r: any) => r.metric === 'IOFC (Income Over Feed Cost)')
+        const profitRow = econDataArray.find((r: any) => r.metric === 'Net Profit')
 
         const revenue = parseFloat(revenueRow?.value || 0)
         const costs = parseFloat(costsRow?.value || 0)
@@ -130,7 +131,7 @@ export default function EconomicsDashboardPage() {
       if (penError) {
         console.error('Pen IOFC error:', penError)
       } else {
-        setPenData(penIofc || [])
+        setPenData((penIofc as unknown as IofcByPen[]) || [])
       }
 
       // Load profitability trends (weekly for 90 days)
@@ -147,7 +148,7 @@ export default function EconomicsDashboardPage() {
       if (trendError) {
         console.error('Trends error:', trendError)
       } else {
-        setTrends(trendData || [])
+        setTrends((trendData as unknown as ProfitabilityTrend[]) || [])
       }
 
       // Load cost breakdown
@@ -160,7 +161,7 @@ export default function EconomicsDashboardPage() {
       if (costError) {
         console.error('Cost breakdown error:', costError)
       } else {
-        setCostBreakdown(costData || [])
+        setCostBreakdown((costData as unknown as CostBreakdown[]) || [])
       }
 
     } catch (err) {
@@ -323,13 +324,13 @@ export default function EconomicsDashboardPage() {
                           <TableRow key={index}>
                             <TableCell className="font-medium">{pen.pen_name}</TableCell>
                             <TableCell>{pen.cow_count}</TableCell>
-                            <TableCell>{parseFloat(pen.avg_milk_kg).toFixed(1)}</TableCell>
-                            <TableCell>${formatNumber(parseFloat(pen.milk_revenue))}</TableCell>
-                            <TableCell>${formatNumber(parseFloat(pen.feed_costs))}</TableCell>
+                            <TableCell>{Number(pen.avg_milk_kg).toFixed(1)}</TableCell>
+                            <TableCell>${formatNumber(Number(pen.milk_revenue))}</TableCell>
+                            <TableCell>${formatNumber(Number(pen.feed_costs))}</TableCell>
                             <TableCell className="font-bold">
-                              ${formatNumber(parseFloat(pen.iofc))}
+                              ${formatNumber(Number(pen.iofc))}
                             </TableCell>
-                            <TableCell>${formatNumber(parseFloat(pen.iofc_per_cow))}</TableCell>
+                            <TableCell>${formatNumber(Number(pen.iofc_per_cow))}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -389,17 +390,17 @@ export default function EconomicsDashboardPage() {
                         {trends.map((trend, index) => (
                           <TableRow key={index}>
                             <TableCell>{trend.period_label}</TableCell>
-                            <TableCell>${formatNumber(parseFloat(trend.milk_revenue))}</TableCell>
-                            <TableCell>${formatNumber(parseFloat(trend.total_costs))}</TableCell>
+                            <TableCell>${formatNumber(Number(trend.milk_revenue))}</TableCell>
+                            <TableCell>${formatNumber(Number(trend.total_costs))}</TableCell>
                             <TableCell className="font-bold">
-                              ${formatNumber(parseFloat(trend.iofc))}
+                              ${formatNumber(Number(trend.iofc))}
                             </TableCell>
                             <TableCell
-                              className={parseFloat(trend.net_profit) >= 0 ? 'text-green-600' : 'text-red-600'}
+                              className={Number(trend.net_profit) >= 0 ? 'text-green-600' : 'text-red-600'}
                             >
-                              ${formatNumber(parseFloat(trend.net_profit))}
+                              ${formatNumber(Number(trend.net_profit))}
                             </TableCell>
-                            <TableCell>{formatNumber(parseFloat(trend.volume_kg))}</TableCell>
+                            <TableCell>{formatNumber(Number(trend.volume_kg))}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -461,18 +462,18 @@ export default function EconomicsDashboardPage() {
                               {cost.cost_type}
                             </TableCell>
                             <TableCell>{cost.category}</TableCell>
-                            <TableCell>${formatNumber(parseFloat(cost.total_amount))}</TableCell>
+                            <TableCell>${formatNumber(Number(cost.total_amount))}</TableCell>
                             <TableCell>{cost.entry_count}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-primary"
-                                    style={{ width: `${Math.min(parseFloat(cost.percentage), 100)}%` }}
+                                    style={{ width: `${Math.min(Number(cost.percentage), 100)}%` }}
                                   />
                                 </div>
                                 <span className="text-sm text-muted-foreground w-12 text-right">
-                                  {parseFloat(cost.percentage).toFixed(1)}%
+                                  {Number(cost.percentage).toFixed(1)}%
                                 </span>
                               </div>
                             </TableCell>

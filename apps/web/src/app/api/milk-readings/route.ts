@@ -6,17 +6,25 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const body = await request.json()
 
+    // Get tenant_id from user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const { data, error } = await supabase
       .from("milk_readings")
       .insert({
-        time: body.time,
+        tenant_id: user.user_metadata.tenant_id,
         animal_id: body.animal_id,
-        session_id: body.session_id,
-        milk_kg: body.milk_kg,
-        duration_seconds: body.duration_seconds,
-        avg_flow_rate: body.avg_flow_rate,
+        time: body.time || body.reading_date,
+        session_id: body.session_id || body.session || "morning",
+        milk_kg: body.milk_kg || body.volume_kg,
+        duration_seconds: body.duration_seconds || null,
+        avg_flow_rate: body.avg_flow_rate || body.flow_rate || null,
+        conductivity: body.conductivity || null,
         source: body.source || "manual",
-      })
+      } as any)
       .select()
       .single()
 

@@ -56,28 +56,29 @@ export default function ProductionDashboardPage() {
 
       const tenantId = user.user_metadata.tenant_id
 
-      // Load production metrics from production_trends view
-      const { data: trendsData, error: trendsError } = await supabase
-        .from('production_trends')
-        .select('*')
+      // Load production metrics from milk_tests
+      const { data: testsData, error: testsError } = await supabase
+        .from('milk_tests')
+        .select('milk_kg, fat_percent, protein_percent, scc')
         .eq('tenant_id', tenantId)
         .order('test_date', { ascending: false })
-        .limit(30)
+        .limit(100)
 
-      if (trendsError) {
-        setError(trendsError.message)
+      if (testsError) {
+        setError(testsError.message)
         return
       }
 
       // Calculate aggregate metrics
+      const trendsData = testsData as any[]
       if (trendsData && trendsData.length > 0) {
-        const totals = trendsData.reduce((acc, day) => ({
-          milk: acc.milk + (day.avg_milk_kg || 0),
-          fat: acc.fat + (day.avg_fat_percent || 0),
-          protein: acc.protein + (day.avg_protein_percent || 0),
-          scc: acc.scc + (day.avg_scc || 0),
-          tests: acc.tests + (day.total_tests || 0),
-          highSCC: acc.highSCC + (day.high_scc_count || 0)
+        const totals = trendsData.reduce((acc: any, test: any) => ({
+          milk: acc.milk + (test.milk_kg || 0),
+          fat: acc.fat + (test.fat_percent || 0),
+          protein: acc.protein + (test.protein_percent || 0),
+          scc: acc.scc + (test.scc || 0),
+          tests: acc.tests + 1,
+          highSCC: acc.highSCC + ((test.scc || 0) > 200000 ? 1 : 0)
         }), { milk: 0, fat: 0, protein: 0, scc: 0, tests: 0, highSCC: 0 })
 
         setMetrics({
@@ -103,7 +104,7 @@ export default function ProductionDashboardPage() {
       if (curveError) {
         console.error('Lactation curve error:', curveError)
       } else {
-        setLactationCurve(curveData || [])
+        setLactationCurve((curveData as unknown as LactationData[]) || [])
       }
 
     } catch (err) {
@@ -257,12 +258,12 @@ export default function ProductionDashboardPage() {
                       </TableHeader>
                       <TableBody>
                         {lactationCurve.slice(0, 50).map((point) => (
-                          <TableRow key={point.dim_at_test}>
-                            <TableCell>{point.dim_at_test}</TableCell>
-                            <TableCell>{parseFloat(point.avg_value).toFixed(1)}</TableCell>
-                            <TableCell>{point.sample_count}</TableCell>
+                          <TableRow key={point.dim}>
+                            <TableCell>{point.dim}</TableCell>
+                            <TableCell>{Number(point.avgMilk).toFixed(1)}</TableCell>
+                            <TableCell>{point.sampleCount}</TableCell>
                             <TableCell>
-                              {point.std_dev ? parseFloat(point.std_dev).toFixed(1) : '-'}
+                              {point.stdDev ? Number(point.stdDev).toFixed(1) : '-'}
                             </TableCell>
                           </TableRow>
                         ))}

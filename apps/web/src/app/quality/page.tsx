@@ -24,13 +24,15 @@ export default async function QualityPage() {
 
   const { herd_metrics, bulk_tank_stats, high_scc_animals } = qualityData
 
-  const formatSCC = (scc: number) => {
+  const formatSCC = (scc: number | null | undefined) => {
+    if (scc == null) return 'N/A'
     if (scc >= 1000000) return `${(scc / 1000000).toFixed(1)}M`
     if (scc >= 1000) return `${(scc / 1000).toFixed(0)}K`
     return scc.toString()
   }
 
-  const getSCCBadgeColor = (scc: number) => {
+  const getSCCBadgeColor = (scc: number | null | undefined) => {
+    if (scc == null) return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
     if (scc < 200000) return 'bg-green-100 text-green-800 hover:bg-green-100'
     if (scc < 400000) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
     return 'bg-red-100 text-red-800 hover:bg-red-100'
@@ -59,7 +61,7 @@ export default async function QualityPage() {
                   variant="outline"
                   className={`mt-2 ${getSCCBadgeColor(herd_metrics.avg_scc)}`}
                 >
-                  {herd_metrics.avg_scc < 200000 ? 'Excellent' : herd_metrics.avg_scc < 400000 ? 'Acceptable' : 'Poor'}
+                  {herd_metrics.avg_scc == null ? 'No data' : herd_metrics.avg_scc < 200000 ? 'Excellent' : herd_metrics.avg_scc < 400000 ? 'Acceptable' : 'Poor'}
                 </Badge>
               </>
             ) : (

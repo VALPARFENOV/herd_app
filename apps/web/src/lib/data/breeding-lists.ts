@@ -37,7 +37,7 @@ export async function getToBreedList(): Promise<BreedingListAnimal[]> {
     return []
   }
 
-  return (data || []).map((animal: Animal & { pens: { name: string } | null }) => {
+  return (data || []).map((animal: any) => {
     const { pens, ...animalData } = animal
     const enriched = enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
 
@@ -100,7 +100,7 @@ export async function getPregCheckList(): Promise<BreedingListAnimal[]> {
     breedingCounts.set(event.animal_id, (breedingCounts.get(event.animal_id) || 0) + 1)
   })
 
-  return (data || []).map((animal: Animal & { pens: { name: string } | null }) => {
+  return (data || []).map((animal: any) => {
     const { pens, ...animalData } = animal
     const enriched = enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
 
@@ -143,7 +143,7 @@ export async function getDryOffList(): Promise<BreedingListAnimal[]> {
     return []
   }
 
-  return (data || []).map((animal: Animal & { pens: { name: string } | null }) => {
+  return (data || []).map((animal: any) => {
     const { pens, ...animalData } = animal
     const enriched = enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
 
@@ -191,7 +191,7 @@ export async function getFreshCowsList(): Promise<BreedingListAnimal[]> {
     return []
   }
 
-  return (data || []).map((animal: Animal & { pens: { name: string } | null }) => {
+  return (data || []).map((animal: any) => {
     const { pens, ...animalData } = animal
     const enriched = enrichAnimal(animalData, pens ? { name: pens.name } as Pen : null)
 

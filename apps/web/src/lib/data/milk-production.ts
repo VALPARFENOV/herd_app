@@ -28,12 +28,12 @@ export async function getDailyMilkProduction(days: number = 30): Promise<DailyMi
     return []
   }
 
-  if (!data || data.length === 0) {
+  if (!data || (data as any).length === 0) {
     return []
   }
 
   // Map database response to our interface
-  return data.map((row: any) => ({
+  return (data as any[]).map((row: any) => ({
     date: row.date,
     totalKg: parseFloat(row.total_kg || 0),
     avgPerCow: parseFloat(row.avg_per_cow || 0),
@@ -68,11 +68,11 @@ export async function getAnimalMilkProduction(
     return []
   }
 
-  if (!data || data.length === 0) {
+  if (!data || (data as any).length === 0) {
     return []
   }
 
-  return data.map((row: any) => ({
+  return (data as any[]).map((row: any) => ({
     date: row.date,
     totalKg: parseFloat(row.total_kg || 0),
     milkingsCount: parseInt(row.milkings_count || 0, 10),
@@ -102,11 +102,11 @@ export async function getLatestMilking(animalId: string): Promise<{
     return null
   }
 
-  if (!data || data.length === 0) {
+  if (!data || (data as any).length === 0) {
     return null
   }
 
-  const row = data[0]
+  const row = (data as any)[0]
   return {
     time: row.time,
     sessionId: row.session_id,

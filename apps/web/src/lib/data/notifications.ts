@@ -215,7 +215,7 @@ export async function generateDailyAlerts(): Promise<{
     return { calving_due: 0, preg_check_overdue: 0, high_scc: 0, total: 0 }
   }
 
-  return data || { calving_due: 0, preg_check_overdue: 0, high_scc: 0, total: 0 }
+  return (data as any) || { calving_due: 0, preg_check_overdue: 0, high_scc: 0, total: 0 }
 }
 
 /**

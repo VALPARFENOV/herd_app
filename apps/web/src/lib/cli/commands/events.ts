@@ -137,7 +137,7 @@ async function eventsSpecificItems(
     // Add custom fields from details
     if (fields && fields.length > 0) {
       for (const field of fields) {
-        base[field] = event.details?.[field.toLowerCase()] || ''
+        (base as any)[field] = event.details?.[field.toLowerCase()] || ''
       }
     }
 

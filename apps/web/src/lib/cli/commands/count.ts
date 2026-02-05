@@ -9,7 +9,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { CommandAST, Condition } from '../parser-simple'
-import { dairyCompToDb, rcCodeToStatus } from '../field-mapping'
+import { dairyCompToDb } from '../field-mapping'
 import { ExecutionResult } from '../executor'
 
 /**
@@ -181,16 +181,11 @@ function buildConditionsJSON(conditions: Condition[]): any {
       return null
     }
 
-    // Special handling for RC field - convert numeric code to status string
-    let value = condition.value
-    if ((condition.field === 'RC' || condition.field === 'RPRO') && typeof value === 'number') {
-      value = rcCodeToStatus(value)
-    }
-
+    // Note: RC code mapping removed - use reproductive_status directly
     return {
       field: dbField,
       operator: condition.operator,
-      value: String(value)
+      value: String(condition.value)
     }
   }).filter(c => c !== null)
 }

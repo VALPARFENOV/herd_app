@@ -17,12 +17,13 @@ import { executeCowval } from './commands/cowval'
 
 export interface ExecutionResult {
   success: boolean
-  type: 'list' | 'count' | 'sum' | 'error'
+  type: 'list' | 'count' | 'sum' | 'error' | 'text'
   data?: any[]
   columns?: string[]
   count?: number
   aggregates?: Record<string, any>
   error?: string
+  text?: string
   executionTime?: number
 }
 

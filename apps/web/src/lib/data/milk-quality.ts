@@ -93,7 +93,7 @@ export async function getHerdQualityMetrics(days: number = 30): Promise<HerdQual
     return null
   }
 
-  return data?.[0] || null
+  return (data as any)?.[0] || null
 }
 
 /**
@@ -116,7 +116,7 @@ export async function getBulkTankStats(days: number = 30): Promise<BulkTankStats
     return null
   }
 
-  return data?.[0] || null
+  return (data as any)?.[0] || null
 }
 
 /**
@@ -137,7 +137,7 @@ export async function getAnimalsWithHighSCC(
     return []
   }
 
-  return data || []
+  return (data as any) || []
 }
 
 /**
@@ -158,7 +158,7 @@ export async function getRecentBulkTankReadings(limit: number = 7): Promise<Bulk
     return []
   }
 
-  return data || []
+  return (data as any) || []
 }
 
 /**
@@ -179,7 +179,7 @@ export async function getAnimalMilkTests(animalId: string): Promise<MilkTest[]> 
     return []
   }
 
-  return data || []
+  return (data as any) || []
 }
 
 /**
@@ -197,7 +197,7 @@ export async function getLatestMilkTest(animalId: string): Promise<MilkTest | nu
     return null
   }
 
-  return data?.[0] || null
+  return (data as any)?.[0] || null
 }
 
 /**
@@ -270,5 +270,5 @@ export async function getBulkTankChartData(days: number = 30): Promise<BulkTankR
     return []
   }
 
-  return data || []
+  return (data as any) || []
 }

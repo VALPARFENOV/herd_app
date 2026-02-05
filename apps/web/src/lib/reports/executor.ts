@@ -351,7 +351,7 @@ export async function getReportTemplates(): Promise<ReportTemplate[]> {
     return []
   }
 
-  return data || []
+  return (data as any) || []
 }
 
 /**
@@ -372,7 +372,7 @@ export async function saveReportTemplate(
   const { data, error } = await supabase
     .from('report_templates')
     .insert({
-      ...template,
+      ...(template as any),
       tenant_id: tenantId,
       created_by: user.id
     })

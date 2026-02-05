@@ -8,7 +8,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AppLayout } from '@/components/layout/AppLayout'
 
 interface MonitorMetrics {
   // Herd Size
@@ -54,12 +53,12 @@ export default function MonitorPage() {
       if (error) throw error
 
       const totalAnimals = animals?.length || 0
-      const milkingCows = animals?.filter(a => a.current_status === 'milking').length || 0
+      const milkingCows = animals?.filter(a => a.current_status === 'lactating').length || 0
       const dryCows = animals?.filter(a => a.current_status === 'dry').length || 0
       const heifers = animals?.filter(a => a.current_status === 'heifer').length || 0
 
       // Production metrics
-      const milkingData = animals?.filter(a => a.current_status === 'milking' && a.last_milk_kg) || []
+      const milkingData = animals?.filter(a => a.current_status === 'lactating' && a.last_milk_kg) || []
       const avgMilkPerCow = milkingData.length > 0
         ? milkingData.reduce((sum, a) => sum + (a.last_milk_kg || 0), 0) / milkingData.length
         : 0
@@ -81,7 +80,7 @@ export default function MonitorPage() {
 
       // Reproduction metrics
       const pregCows = animals?.filter(a => a.reproductive_status === 'preg').length || 0
-      const eligibleCows = animals?.filter(a => a.current_status === 'milking' && a.dim && a.dim > 60).length || 0
+      const eligibleCows = animals?.filter(a => a.current_status === 'lactating' && a.dim && a.dim > 60).length || 0
       const pregnancyRate = eligibleCows > 0 ? (pregCows / eligibleCows) * 100 : 0
 
       const openCows = animals?.filter(a => a.reproductive_status === 'open' && a.days_open) || []
@@ -124,36 +123,31 @@ export default function MonitorPage() {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-muted-foreground">Loading metrics...</div>
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-muted-foreground">Loading metrics...</div>
+      </div>
     )
   }
 
   if (!metrics) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-destructive">Failed to load metrics</div>
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-destructive">Failed to load metrics</div>
+      </div>
     )
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">MONITOR Report</h1>
-          <p className="text-muted-foreground">
-            Key Performance Indicators - Updated {new Date().toLocaleDateString()}
-          </p>
-        </div>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">MONITOR Report</h1>
+        <p className="text-muted-foreground">
+          Key Performance Indicators - Updated {new Date().toLocaleDateString()}
+        </p>
+      </div>
 
-        {/* Herd Size Section */}
-        <div>
+      {/* Herd Size Section */}
+      <div>
           <h2 className="text-xl font-semibold mb-3">Herd Size</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <MetricCard
@@ -276,8 +270,7 @@ export default function MonitorPage() {
             />
           </div>
         </div>
-      </div>
-    </AppLayout>
+    </div>
   )
 }
 

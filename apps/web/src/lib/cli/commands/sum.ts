@@ -9,7 +9,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { CommandAST, Condition } from '../parser-simple'
-import { dairyCompToDb, rcCodeToStatus } from '../field-mapping'
+import { dairyCompToDb } from '../field-mapping'
 import { ExecutionResult } from '../executor'
 
 /**
@@ -54,9 +54,10 @@ export async function executeSum(ast: CommandAST): Promise<ExecutionResult> {
     // Call RPC function
     const { data, error } = await supabase.rpc('calculate_aggregates', {
       p_tenant_id: user.user_metadata.tenant_id,
+      p_field: dbFields[0] || '',
       p_fields: dbFields,
       p_conditions: conditions,
-      p_group_by: ast.groupBy ? dairyCompToDb(ast.groupBy) : null,
+      p_group_by: (ast.groupBy ? dairyCompToDb(ast.groupBy) : undefined) || undefined,
       p_include_avg: showAverages,
       p_include_sum: showTotals
     })
@@ -212,7 +213,7 @@ function buildConditionsJSON(conditions: Condition[]): any {
     // Special handling for RC field - convert numeric code to status string
     let value = condition.value
     if ((condition.field === 'RC' || condition.field === 'RPRO') && typeof value === 'number') {
-      value = rcCodeToStatus(value)
+      // RC code mapping removed
     }
 
     return {

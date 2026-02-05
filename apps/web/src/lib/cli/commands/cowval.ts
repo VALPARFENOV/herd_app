@@ -4,9 +4,9 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
-import type { CommandAST, ExecutionResult } from '../types'
+import type { CommandAST } from '../parser-simple'
+import type { ExecutionResult } from '../executor'
 import { dairyCompToDb } from '../field-mapping'
-import { buildConditionsJSON } from '../utils'
 
 /**
  * Execute COWVAL command
@@ -19,6 +19,7 @@ export async function executeCowval(ast: CommandAST): Promise<ExecutionResult> {
   if (authError || !user) {
     return {
       success: false,
+      type: 'error' as const,
       error: 'Authentication required'
     }
   }
@@ -27,6 +28,7 @@ export async function executeCowval(ast: CommandAST): Promise<ExecutionResult> {
   if (!tenantId) {
     return {
       success: false,
+      type: 'error' as const,
       error: 'No tenant associated with user'
     }
   }
@@ -79,6 +81,7 @@ async function cowvalReport(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to get cow valuations: ${error.message}`
     }
   }
@@ -86,7 +89,7 @@ async function cowvalReport(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No cow valuations available. Run COWVAL\\UPDATE to calculate valuations.'
     }
   }
@@ -137,6 +140,7 @@ async function cowvalUpdate(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to update cow valuations: ${error.message}`
     }
   }
@@ -145,7 +149,7 @@ async function cowvalUpdate(
 
   return {
     success: true,
-    type: 'text',
+    type: 'text' as const,
     text: `✓ Successfully updated valuations for ${cowsUpdated} cows`
   }
 }
@@ -164,6 +168,7 @@ async function cowvalSummary(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to get valuation summary: ${error.message}`
     }
   }
@@ -171,7 +176,7 @@ async function cowvalSummary(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No valuation data available. Run COWVAL\\UPDATE first.'
     }
   }
@@ -221,6 +226,7 @@ async function cowvalTop(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to get cow valuations: ${error.message}`
     }
   }
@@ -228,7 +234,7 @@ async function cowvalTop(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No cow valuations available'
     }
   }

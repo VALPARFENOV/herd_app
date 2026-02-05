@@ -4,7 +4,8 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
-import type { CommandAST, ExecutionResult } from '../types'
+import type { CommandAST } from '../parser-simple'
+import type { ExecutionResult } from '../executor'
 
 /**
  * Execute ECON command with variants
@@ -17,6 +18,7 @@ export async function executeEcon(ast: CommandAST): Promise<ExecutionResult> {
   if (authError || !user) {
     return {
       success: false,
+      type: 'error' as const,
       error: 'Authentication required'
     }
   }
@@ -25,6 +27,7 @@ export async function executeEcon(ast: CommandAST): Promise<ExecutionResult> {
   if (!tenantId) {
     return {
       success: false,
+      type: 'error' as const,
       error: 'No tenant associated with user'
     }
   }
@@ -73,6 +76,7 @@ async function econBasic(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to calculate economics: ${error.message}`
     }
   }
@@ -80,7 +84,7 @@ async function econBasic(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No economic data available for the selected period'
     }
   }
@@ -133,6 +137,7 @@ async function econByPen(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to calculate IOFC by pen: ${error.message}`
     }
   }
@@ -140,7 +145,7 @@ async function econByPen(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No pen-level economic data available'
     }
   }
@@ -200,6 +205,7 @@ async function econTrends(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to calculate profitability trends: ${error.message}`
     }
   }
@@ -207,7 +213,7 @@ async function econTrends(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No trend data available'
     }
   }
@@ -277,6 +283,7 @@ async function econCostBreakdown(
   if (error) {
     return {
       success: false,
+      type: 'error' as const,
       error: `Failed to get cost breakdown: ${error.message}`
     }
   }
@@ -284,7 +291,7 @@ async function econCostBreakdown(
   if (!data || data.length === 0) {
     return {
       success: true,
-      type: 'text',
+      type: 'text' as const,
       text: 'No cost entries found for the selected period'
     }
   }

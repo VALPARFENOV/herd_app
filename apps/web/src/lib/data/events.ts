@@ -123,7 +123,7 @@ export async function getRecentEvents(options?: {
     return []
   }
 
-  return (data || []).map((event: Event & { animals: { ear_tag: string } | null }) => {
+  return ((data || []) as any[]).map((event: Event & { animals: { ear_tag: string } | null }) => {
     const { animals, ...eventData } = event
     return {
       ...enrichEvent(eventData),

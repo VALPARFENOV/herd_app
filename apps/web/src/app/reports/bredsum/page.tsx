@@ -157,7 +157,7 @@ export default function BredsumPage() {
       startDate.setDate(startDate.getDate() - parseInt(dateRange))
 
       // Call RPC function
-      const { data: rpcData, error: rpcError } = await supabase.rpc(variantInfo.rpcFunction, {
+      const { data: rpcData, error: rpcError } = await supabase.rpc(variantInfo.rpcFunction as 'calculate_bredsum_basic', {
         p_tenant_id: tenantId,
         p_start_date: startDate.toISOString().split('T')[0],
         p_end_date: endDate.toISOString().split('T')[0]
@@ -169,13 +169,14 @@ export default function BredsumPage() {
       }
 
       // Format data
-      if (rpcData && rpcData.length > 0) {
-        const columns = Object.keys(rpcData[0])
-        const rows = rpcData
+      const resultData = rpcData as Record<string, unknown>[] | null
+      if (resultData && resultData.length > 0) {
+        const columns = Object.keys(resultData[0])
+        const rows = resultData as Record<string, number | string | null>[]
 
         // Calculate summary stats
-        const totalBreedings = rows.reduce((sum, row) => sum + (row.total_breedings || 0), 0)
-        const totalPregnancies = rows.reduce((sum, row) => sum + (row.pregnancies || 0), 0)
+        const totalBreedings = rows.reduce((sum: number, row) => sum + (Number(row.total_breedings) || 0), 0)
+        const totalPregnancies = rows.reduce((sum: number, row) => sum + (Number(row.pregnancies) || 0), 0)
         const overallConceptionRate = totalBreedings > 0
           ? (totalPregnancies / totalBreedings * 100)
           : 0
@@ -244,7 +245,7 @@ export default function BredsumPage() {
 
     // Format decimals
     if (typeof value === 'number' && !Number.isInteger(value)) {
-      return parseFloat(value).toFixed(2)
+      return Number(value).toFixed(2)
     }
 
     // Format dates
