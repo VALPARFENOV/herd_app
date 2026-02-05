@@ -131,7 +131,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<from supabase start>
 - `apps/web/src/lib/supabase/` - Supabase client (server/client)
 - `apps/web/src/types/database.ts` - Database TypeScript types
 
-## Planned Features (Phase 2+)
+## Completed Phases
+
+- **Phase 1:** CLI Foundation — LIST, COUNT, SUM, calculated fields, RC codes
+- **Phase 2:** BREDSUM — 12 breeding summary variants
+- **Phase 3:** PLOT, GRAPH, EVENTS — production analysis, 8 chart functions
+- **Phase 4:** ECON, COWVAL — economics, cow valuation, custom report builder
+- **DairyComp 305 parity:** 90% (9/10 modules)
+
+See `features/done/` for detailed summaries of each phase.
+
+## Planned Features (Next)
 
 1. **Milk Production Module** - Daily milk tracking with TimescaleDB
 2. **Mobile App** - React Native with offline sync
@@ -184,6 +194,98 @@ Slash command for managing the self-hosted Supabase instance.
 | `scripts/apply-all-migrations.sh` | Apply all migrations (`--from`, `--include-initial`) |
 | `scripts/create-user.sh` | Create auth + profile user (`--tenant` required) |
 
+## Agent Pipeline
+
+### Feature Development Workflow
+Каждая фича проходит через пайплайн агентов:
+
+```
+User Story → Product Agent → Backend Agent → QA Agent → Frontend Agent → Release Agent
+```
+
+### Файловая структура пайплайна
+```
+.agents/
+├── prompts/           # Системные промпты агентов
+│   ├── product.md     # Product Agent
+│   ├── backend.md     # Backend Agent
+│   ├── qa.md          # QA Agent
+│   ├── frontend.md    # Frontend Agent
+│   └── release.md     # Release Agent
+└── templates/         # Шаблоны документов
+    ├── feature-spec.md
+    ├── handoff.md
+    └── user-story.md
+
+features/
+├── active/            # Фичи в работе
+│   └── feat-xxx/
+│       ├── spec.md
+│       ├── decisions.md
+│       └── handoffs/
+│           ├── 01-product.md
+│           ├── 02-backend.md
+│           ├── 03-qa.md
+│           └── 04-frontend.md
+└── done/              # Завершённые фичи
+
+contracts/
+├── types.ts           # Общие типы контрактов
+└── api-reference.md   # API reference (RPC functions)
+```
+
+### Перед началом работы как агент
+1. Прочитай свой промпт: `.agents/prompts/{role}.md`
+2. Прочитай спеку фичи: `features/active/{feat-name}/spec.md`
+3. Прочитай предыдущий хэндофф (если есть)
+4. Прочитай `CONVENTIONS.md`
+5. Прочитай `contracts/` для понимания текущих контрактов
+
+### Золотые правила
+- Контракты в `contracts/` — источник правды для типов и API
+- Не меняй контракты без документирования в хэндоффе
+- Каждый агент завершает работу хэндоффом
+- Код должен компилироваться после каждого этапа
+- Следуй паттернам существующего кода
+
+### Доступные MCP-серверы и плагины
+
+#### Supabase MCP (`mcp__supabase-self-hosted__*`)
+- `execute_sql` — выполнить SQL на production PostgreSQL
+- `list_tables` — список таблиц
+- `list_migrations` — список миграций
+- `apply_migration` — применить миграцию
+- `generate_typescript_types` — генерация типов
+- `list_auth_users` / `create_auth_user` — управление пользователями
+- `list_extensions` — расширения PostgreSQL
+- `get_project_url` — URL проекта
+
+#### Playwright MCP (`mcp__plugin_playwright_playwright__*`)
+Браузерная автоматизация и тестирование:
+- `browser_navigate` — перейти на URL
+- `browser_snapshot` — accessibility snapshot (лучше скриншота для анализа)
+- `browser_take_screenshot` — визуальный скриншот
+- `browser_click` / `browser_type` / `browser_fill_form` — взаимодействие
+- `browser_evaluate` — выполнить JavaScript
+- `browser_console_messages` — ошибки в консоли
+- `browser_network_requests` — сетевые запросы
+- `browser_wait_for` — ожидание элементов
+
+#### Figma MCP (`mcp__figma__*`)
+- `get_figma_data` — получить структуру и данные из Figma-файла
+- `download_figma_images` — скачать изображения/иконки
+
+### Быстрый запуск фичи
+```bash
+# 1. Создай фичу
+./.agents/run.sh product feat-my-feature
+
+# 2. Или вручную в Claude Code:
+# "Ты — Product Agent. Прочитай .agents/prompts/product.md
+#  Фича: features/active/feat-my-feature/
+#  User Story: ..."
+```
+
 ## Session Logs
 
 После каждой рабочей сессии перед коммитом записывай краткий итог в файл:
@@ -202,3 +304,11 @@ Slash command for managing the self-hosted Supabase instance.
 - Architecture: `docs/architecture.md`
 - Architecture plan: `.claude/plans/generic-beaming-melody.md`
 - Session logs: `.claude/sessions/`
+- **Code conventions:** `CONVENTIONS.md`
+- **Agent prompts:** `.agents/prompts/`
+- **Agent templates:** `.agents/templates/`
+- **API contracts:** `contracts/api-reference.md`
+- **Type contracts:** `contracts/types.ts`
+- **Completed features:** `features/done/`
+- **Active features:** `features/active/`
+- **Pipeline docs:** `docs/future_pipelain.md`
